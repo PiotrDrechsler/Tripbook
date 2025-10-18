@@ -1,94 +1,128 @@
-# 10x Astro Starter
+# Tripbook
 
-A modern, opinionated starter template for building fast, accessible, and AI-friendly web applications.
+> Minimalist web app for archiving and managing your custom trip routes from mapy.com.
+
+[![CI Status](https://github.com/your-org/Tripbook/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/Tripbook/actions)  
+[![Netlify Status](https://api.netlify.com/api/v1/badges/your-badge-id/deploy-status)](https://app.netlify.com/sites/your-site/deploys)  
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+## Table of Contents
+
+1. [Project Description](#project-description)
+2. [Tech Stack](#tech-stack)
+3. [Getting Started](#getting-started)
+4. [Available Scripts](#available-scripts)
+5. [Project Scope](#project-scope)
+6. [Project Status](#project-status)
+7. [License](#license)
+
+## Project Description
+
+Tripbook is a minimalist web application that lets you save, describe, and revisit your custom trip routes planned on mapy.com. It provides a personal library of your trips, enabling you to:
+
+- Store URLs to mapy.com routes with built-in domain validation.
+- Add optional descriptions and dates to trips.
+- View, edit, and delete trips via a clean, single-page interface.
+
+Built as an MVP for certification, Tripbook leverages Astro islands with React, TypeScript, and Supabase for a lightweight yet robust experience.
 
 ## Tech Stack
 
-- [Astro](https://astro.build/) v5.5.5 - Modern web framework for building fast, content-focused websites
-- [React](https://react.dev/) v19.0.0 - UI library for building interactive components
-- [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
-- [Tailwind CSS](https://tailwindcss.com/) v4.0.17 - Utility-first CSS framework
-
-## Prerequisites
-
-- Node.js v22.14.0 (as specified in `.nvmrc`)
-- npm (comes with Node.js)
+- **Framework**: Astro 5 (Static Site Generation + Island Architecture)
+- **UI Library**: React 19 (Interactive components)
+- **Language**: TypeScript 5
+- **Styling**: Tailwind CSS 4 + Shadcn/ui
+- **Backend-as-a-Service**: Supabase (Auth, Postgres, RLS, REST/GraphQL, real-time)
+- **Testing**: Playwright (E2E)
+- **CI/CD**: GitHub Actions → Netlify
 
 ## Getting Started
 
-1. Clone the repository:
+### Prerequisites
+
+- Node.js v22.14.0 (managed via [nvm](https://github.com/nvm-sh/nvm))
+- Supabase Project (URL & Public Anon Key)
+
+### Setup
 
 ```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
-```
+# Clone repository
+git clone https://github.com/your-org/Tripbook.git
+cd Tripbook
 
-2. Install dependencies:
+# Use the correct Node version
+nvm use
 
-```bash
+# Install dependencies
 npm install
-```
 
-3. Run the development server:
+# Create a .env file in the project root with:
+# SUPABASE_URL=<your-supabase-url>
+# SUPABASE_ANON_KEY=<your-anon-key>
 
-```bash
+# Start the development server
 npm run dev
 ```
 
-4. Build for production:
-
-```bash
-npm run build
-```
+Open [http://localhost:3000](http://localhost:3000) to view in your browser.
 
 ## Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
+In the project directory, you can run:
 
-## Project Structure
+| Command            | Description                         |
+| ------------------ | ----------------------------------- |
+| `npm run dev`      | Start Astro in dev mode (localhost) |
+| `npm run build`    | Build the production site           |
+| `npm run preview`  | Preview the built site locally      |
+| `npm run astro`    | Run Astro CLI commands              |
+| `npm run lint`     | Lint all files with ESLint          |
+| `npm run lint:fix` | Lint & fix issues automatically     |
+| `npm run format`   | Format all files with Prettier      |
 
-```md
-.
-├── src/
-│   ├── layouts/    # Astro layouts
-│   ├── pages/      # Astro pages
-│   │   └── api/    # API endpoints
-│   ├── components/ # UI components (Astro & React)
-│   └── assets/     # Static assets
-├── public/         # Public assets
-```
+## Project Scope
 
-## AI Development Support
+### In Scope (MVP)
 
-This project is configured with AI development tools to enhance the development experience, providing guidelines for:
+- User registration & login (email/password)
+- Session management & access control
+- CRUD operations for trips:
+  - Name (required, ≤100 chars)
+  - Description (optional, ≤2000 chars)
+  - Map URL (required, `mapy.com` validation)
+  - Date (optional)
+- List view & detail panel (name, description, date, “Open Map” link)
+- Edit & delete trips (hard delete)
+- Modal/side panel forms for add/edit
+- Basic responsive design
+- One Playwright E2E test (registration → login → add trip → display)
+- CI/CD with GitHub Actions & automatic Netlify deployment
 
-- Project structure
-- Coding practices
-- Frontend development
-- Styling with Tailwind
-- Accessibility best practices
-- Astro and React guidelines
+### Out of Scope
 
-### Cursor IDE
+- Landing page or separate dashboard
+- Soft deletes, toast notifications, animations, skeleton loaders
+- Mobile hamburger menu, breadcrumbs, advanced navigation
+- Trip sharing, tagging, photo uploads, analytics
+- Password strength meter or confirm-password field
 
-The project includes AI rules in `.cursor/rules/` directory that help Cursor IDE understand the project structure and provide better code suggestions.
+## Project Status
 
-### GitHub Copilot
+This repository contains the MVP implementation:
 
-AI instructions for GitHub Copilot are available in `.github/copilot-instructions.md`
+- ✅ Authentication & session management
+- ✅ Trip CRUD functionality & validation
+- ✅ Interactive UI with Astro + React
+- ✅ E2E testing pipeline
+- ✅ Automated CI/CD & Netlify deployment
 
-### Windsurf
+**Next Steps**
 
-The `.windsurfrules` file contains AI configuration for Windsurf.
-
-## Contributing
-
-Please follow the AI guidelines and coding practices defined in the AI configuration files when contributing to this project.
+- Embed mapy.com map iframes inline
+- Expand test coverage
+- Add rich notifications UI
+- Implement soft deletes or archiving
 
 ## License
 
-MIT
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
