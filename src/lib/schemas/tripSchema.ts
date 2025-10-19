@@ -77,3 +77,18 @@ export const listTripsQuerySchema = z.object({
  * Type inferred from the listTripsQuerySchema
  */
 export type ListTripsQueryInput = z.infer<typeof listTripsQuerySchema>;
+
+/**
+ * Validation schema for getting a single trip by ID
+ *
+ * Validates:
+ * - id: required UUID string
+ */
+export const getTripParamsSchema = z.object({
+  id: z.string().uuid("Invalid tripId format"),
+});
+
+/**
+ * Type inferred from the getTripParamsSchema
+ */
+export type GetTripParams = z.infer<typeof getTripParamsSchema>;

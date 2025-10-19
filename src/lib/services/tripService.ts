@@ -41,6 +41,27 @@ export async function createTrip(command: CreateTripCommand, supabase: SupabaseC
 }
 
 /**
+ * Retrieves a single trip by its ID
+ *
+ * @param id - The UUID of the trip to retrieve
+ * @param supabase - Supabase client instance
+ * @returns The trip record if found, null otherwise
+ * @throws Error if the database operation fails (excluding not found)
+ */
+export async function getTripById(id: string, supabase: SupabaseClient): Promise<Tables<"trips"> | null> {
+  const { data, error } = await supabase.from("trips").select("*").eq("id", id).single();
+
+  // PGRST116 is the Supabase error code for "not found"
+  // We treat this as a valid case (return null) rather than an error
+  if (error && error.code !== "PGRST116") {
+    console.error("Error fetching trip:", error);
+    throw new Error(`Failed to fetch trip: ${error.message}`);
+  }
+
+  return data || null;
+}
+
+/**
  * Retrieves a paginated and sorted list of trips
  *
  * @param params - Pagination and sorting parameters
