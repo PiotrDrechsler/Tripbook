@@ -5,6 +5,8 @@ import { ErrorMessage } from "./ErrorMessage";
 import { EmptyState } from "./EmptyState";
 import { TripsList } from "./TripsList";
 import { Pagination } from "./Pagination";
+import { AddTripButton } from "./AddTripButton";
+import { CreateTripModal } from "./CreateTripModal";
 
 interface TripsListContainerProps {
   onTripSelected?: (tripId: string) => void;
@@ -19,8 +21,11 @@ export default function TripsListContainer({ onTripSelected }: TripsListContaine
     sortDirection: "desc" as const,
   });
 
+  // Modal state
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
   // Fetch trips using the custom hook
-  const { data, isLoading, error } = useTrips(queryParams);
+  const { data, isLoading, error, refetch } = useTrips(queryParams);
 
   // Handle page change
   const handlePageChange = (page: number) => {
@@ -32,6 +37,20 @@ export default function TripsListContainer({ onTripSelected }: TripsListContaine
     if (onTripSelected) {
       onTripSelected(tripId);
     }
+  };
+
+  // Handle modal open/close
+  const handleOpenModal = () => {
+    setIsCreateModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsCreateModalOpen(false);
+  };
+
+  // Handle successful trip creation
+  const handleTripCreated = () => {
+    refetch();
   };
 
   // Loading state
@@ -46,14 +65,40 @@ export default function TripsListContainer({ onTripSelected }: TripsListContaine
 
   // Empty state
   if (!data || data.data.length === 0) {
-    return <EmptyState />;
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold sm:text-3xl">Moje wycieczki</h1>
+            <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+              Zarządzaj swoimi trasami i planuj nowe wyprawy
+            </p>
+          </div>
+          <AddTripButton onOpen={handleOpenModal} />
+        </div>
+        <EmptyState />
+        <CreateTripModal isOpen={isCreateModalOpen} onClose={handleCloseModal} onSuccess={handleTripCreated} />
+      </div>
+    );
   }
 
   // Success state with data
   return (
     <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold sm:text-3xl">Moje wycieczki</h1>
+          <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+            Zarządzaj swoimi trasami i planuj nowe wyprawy
+          </p>
+        </div>
+        <AddTripButton onOpen={handleOpenModal} />
+      </div>
+
       <TripsList trips={data.data} onTripSelected={handleTripSelected} />
       <Pagination pagination={data.pagination} onPageChange={handlePageChange} />
+
+      <CreateTripModal isOpen={isCreateModalOpen} onClose={handleCloseModal} onSuccess={handleTripCreated} />
     </div>
   );
 }

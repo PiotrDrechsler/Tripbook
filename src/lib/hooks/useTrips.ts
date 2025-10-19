@@ -12,12 +12,18 @@ interface UseTripsResult {
   data: ListTripsResponseDto | null;
   isLoading: boolean;
   error: Error | null;
+  refetch: () => void;
 }
 
 export function useTrips(queryParams: UseTripsParams): UseTripsResult {
   const [data, setData] = useState<ListTripsResponseDto | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
+  const [refetchTrigger, setRefetchTrigger] = useState<number>(0);
+
+  const refetch = () => {
+    setRefetchTrigger((prev) => prev + 1);
+  };
 
   useEffect(() => {
     const fetchTrips = async () => {
@@ -51,7 +57,7 @@ export function useTrips(queryParams: UseTripsParams): UseTripsResult {
     };
 
     fetchTrips();
-  }, [queryParams.page, queryParams.limit, queryParams.sortColumn, queryParams.sortDirection]);
+  }, [queryParams.page, queryParams.limit, queryParams.sortColumn, queryParams.sortDirection, refetchTrigger]);
 
-  return { data, isLoading, error };
+  return { data, isLoading, error, refetch };
 }
