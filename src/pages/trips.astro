@@ -1,0 +1,13 @@
+---
+import Layout from "../layouts/Layout.astro";
+import TripsListContainer from "../components/trips/TripsListContainer";
+---
+
+<Layout title="My Trips - Tripbook">
+  <main class="min-h-screen bg-background">
+    <div class="container mx-auto px-4 py-8">
+      <h1 class="text-3xl font-bold mb-6">My Trips</h1>
+      <TripsListContainer client:load />
+    </div>
+  </main>
+</Layout>
