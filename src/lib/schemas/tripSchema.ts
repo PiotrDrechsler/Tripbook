@@ -41,3 +41,39 @@ export const createTripSchema = z.object({
  * Type inferred from the createTripSchema
  */
 export type CreateTripInput = z.infer<typeof createTripSchema>;
+
+/**
+ * Validation schema for listing trips query parameters
+ *
+ * Validates:
+ * - page: optional positive integer, default: 1
+ * - limit: optional integer between 1 and 100, default: 20
+ * - sort: optional string matching allowed sort patterns, default: "-created_at"
+ */
+export const listTripsQuerySchema = z.object({
+  page: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val, 10) : 1))
+    .refine((val) => !isNaN(val) && val > 0, "Page must be a positive number"),
+
+  limit: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val, 10) : 20))
+    .refine((val) => !isNaN(val) && val >= 1 && val <= 100, "Limit must be between 1 and 100"),
+
+  sort: z
+    .string()
+    .optional()
+    .default("-created_at")
+    .refine(
+      (val) => ["name", "-name", "trip_date", "-trip_date", "created_at", "-created_at"].includes(val),
+      "Invalid sort parameter. Allowed values: name, -name, trip_date, -trip_date, created_at, -created_at"
+    ),
+});
+
+/**
+ * Type inferred from the listTripsQuerySchema
+ */
+export type ListTripsQueryInput = z.infer<typeof listTripsQuerySchema>;

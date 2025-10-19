@@ -44,3 +44,13 @@ export interface ErrorResponseDto {
   message: string;
   field?: string;
 }
+
+/**
+ * Parameters for listing trips
+ */
+export interface ListTripsParams {
+  page: number;
+  limit: number;
+  sortColumn: string;
+  sortDirection: "asc" | "desc";
+}
