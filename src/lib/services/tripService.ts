@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "../../db/supabase.client";
 import type { Tables } from "../../db/database.types";
-import type { CreateTripCommand, ListTripsParams, ListTripsResponseDto, TripDto } from "../../types";
+import type { CreateTripCommand, UpdateTripCommand, ListTripsParams, ListTripsResponseDto, TripDto } from "../../types";
 
 /**
  * Service for managing Trip entities
@@ -115,4 +115,30 @@ export async function listTrips(params: ListTripsParams, supabase: SupabaseClien
   };
 
   return response;
+}
+
+/**
+ * Updates an existing trip by its ID
+ *
+ * @param id - The UUID of the trip to update
+ * @param command - The trip data to update (partial update)
+ * @param supabase - Supabase client instance
+ * @returns The updated trip record if found, null if not found
+ * @throws Error if the database operation fails (excluding not found)
+ */
+export async function updateTrip(
+  id: string,
+  command: UpdateTripCommand,
+  supabase: SupabaseClient
+): Promise<Tables<"trips"> | null> {
+  const { data, error } = await supabase.from("trips").update(command).eq("id", id).select().single();
+
+  // PGRST116 is the Supabase error code for "not found"
+  // We treat this as a valid case (return null) rather than an error
+  if (error && error.code !== "PGRST116") {
+    console.error("Error updating trip:", error);
+    throw new Error(`Failed to update trip: ${error.message}`);
+  }
+
+  return data || null;
 }

@@ -92,3 +92,47 @@ export const getTripParamsSchema = z.object({
  * Type inferred from the getTripParamsSchema
  */
 export type GetTripParams = z.infer<typeof getTripParamsSchema>;
+
+/**
+ * Validation schema for updating an existing trip
+ *
+ * Validates:
+ * - name: optional, non-empty string, max 100 characters
+ * - description: optional string, max 2000 characters, nullable
+ * - map_url: optional string containing "mapy.com"
+ * - trip_date: optional ISO 8601 date string (YYYY-MM-DD), nullable
+ *
+ * Note: All fields are optional for partial updates (PATCH semantics)
+ */
+export const updateTripSchema = z.object({
+  name: z
+    .string({
+      invalid_type_error: "Name must be a string",
+    })
+    .min(1, "Name cannot be empty")
+    .max(100, "Name must not exceed 100 characters")
+    .trim()
+    .optional(),
+
+  description: z.string().max(2000, "Description must not exceed 2000 characters").trim().nullable().optional(),
+
+  map_url: z
+    .string({
+      invalid_type_error: "Map URL must be a string",
+    })
+    .min(1, "Map URL cannot be empty")
+    .refine((url) => url.includes("mapy.com"), "Map URL must contain 'mapy.com'")
+    .optional(),
+
+  trip_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Trip date must be in ISO 8601 format (YYYY-MM-DD)")
+    .refine((date) => !isNaN(Date.parse(date)), "Trip date must be a valid date")
+    .nullable()
+    .optional(),
+});
+
+/**
+ * Type inferred from the updateTripSchema
+ */
+export type UpdateTripInput = z.infer<typeof updateTripSchema>;
