@@ -165,7 +165,17 @@ export function TripEditForm({ trip }: TripEditFormProps) {
             disabled={isSubmitting}
           />
           {errors.map_url && <p className="text-sm text-destructive">{errors.map_url}</p>}
-          <p className="text-xs text-muted-foreground">Link musi zawierać &quot;mapy.com&quot;</p>
+          <p className="text-xs text-muted-foreground">
+            Link musi zawierać &quot;mapy.com&quot; •{" "}
+            <a
+              href="https://mapy.com/zakladni"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline focus-visible:underline focus-visible:outline-none"
+            >
+              Zaplanuj trasę na Mapy.com
+            </a>
+          </p>
         </div>
 
         {/* Trip date field */}
