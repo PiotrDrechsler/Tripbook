@@ -54,3 +54,17 @@ export interface ListTripsParams {
   sortColumn: string;
   sortDirection: "asc" | "desc";
 }
+
+/**
+ * Parameters for getting a single trip
+ */
+export interface GetTripParams {
+  id: string;
+}
+
+/**
+ * View model for Trip with formatted display data
+ */
+export interface TripViewModel extends TripDto {
+  displayDate: string;
+}

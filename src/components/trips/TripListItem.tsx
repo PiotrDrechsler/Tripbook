@@ -19,12 +19,17 @@ export function TripListItem({ trip, onTripSelected }: TripListItemProps) {
 
   const handleClick = () => {
     onTripSelected(trip.id);
+    window.location.href = `/trips/${trip.id}`;
   };
 
   return (
-    <div
-      onClick={handleClick}
-      className="group cursor-pointer rounded-lg border border-border bg-card p-4 shadow-sm transition-all hover:shadow-md hover:border-primary/50"
+    <a
+      href={`/trips/${trip.id}`}
+      onClick={(e) => {
+        e.preventDefault();
+        handleClick();
+      }}
+      className="group block cursor-pointer rounded-lg border border-border bg-card p-4 shadow-sm transition-all hover:shadow-md hover:border-primary/50"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -57,6 +62,6 @@ export function TripListItem({ trip, onTripSelected }: TripListItemProps) {
         </div>
         {trip.description && <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{trip.description}</p>}
       </div>
-    </div>
+    </a>
   );
 }
