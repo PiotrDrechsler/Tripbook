@@ -4,6 +4,7 @@
     "source.fixAll": "explicit",
     "source.fixAll.eslint": "explicit"
   },
+  "files.eol": "\n",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
