@@ -142,3 +142,38 @@ export async function updateTrip(
 
   return data || null;
 }
+
+/**
+ * Deletes a trip by ID (hard delete)
+ *
+ * @param id - UUID of the trip to delete
+ * @param supabase - Supabase client instance
+ * @returns true if trip was deleted, false if trip doesn't exist
+ * @throws Error if the database operation fails
+ */
+export async function deleteTrip(id: string, supabase: SupabaseClient): Promise<boolean> {
+  // First check if trip exists
+  const { data: existingTrip, error: checkError } = await supabase.from("trips").select("id").eq("id", id).single();
+
+  // PGRST116 is the Supabase error code for "not found"
+  // Handle error (other than not found)
+  if (checkError && checkError.code !== "PGRST116") {
+    console.error("Error checking trip existence:", checkError);
+    throw new Error(`Failed to check trip: ${checkError.message}`);
+  }
+
+  // If trip doesn't exist, return false
+  if (!existingTrip) {
+    return false;
+  }
+
+  // Delete the trip
+  const { error: deleteError } = await supabase.from("trips").delete().eq("id", id);
+
+  if (deleteError) {
+    console.error("Error deleting trip:", deleteError);
+    throw new Error(`Failed to delete trip: ${deleteError.message}`);
+  }
+
+  return true;
+}

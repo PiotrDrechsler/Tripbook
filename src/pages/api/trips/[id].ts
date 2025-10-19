@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { z } from "zod";
 
 import { getTripParamsSchema, updateTripSchema } from "../../../lib/schemas/tripSchema";
-import { getTripById, updateTrip } from "../../../lib/services/tripService";
+import { getTripById, updateTrip, deleteTrip } from "../../../lib/services/tripService";
 import type { TripDto, ErrorResponseDto, UpdateTripCommand } from "../../../types";
 
 export const prerender = false;
@@ -230,6 +230,81 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error("Error in PATCH /api/trips/[id]:", error);
+
+    // Return generic error response
+    const errorResponse: ErrorResponseDto = {
+      error: "Internal Server Error",
+      message: error instanceof Error ? error.message : "An unexpected error occurred",
+    };
+
+    return new Response(JSON.stringify(errorResponse), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+};
+
+/**
+ * DELETE /api/trips/{tripId}
+ * Permanently deletes a trip (hard delete)
+ *
+ * Path parameters:
+ * - id: string (required, must be a valid UUID)
+ *
+ * Responses:
+ * - 204: Trip successfully deleted (no content)
+ * - 400: Validation error (invalid UUID format)
+ * - 404: Trip not found
+ * - 500: Internal server error
+ */
+export const DELETE: APIRoute = async ({ params, locals }) => {
+  try {
+    // Validate tripId parameter
+    let validatedParams;
+    try {
+      validatedParams = getTripParamsSchema.parse(params);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const firstError = error.errors[0];
+
+        const errorResponse: ErrorResponseDto = {
+          error: "Validation error",
+          message: firstError.message,
+          field: firstError.path.join("."),
+        };
+
+        return new Response(JSON.stringify(errorResponse), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      throw error;
+    }
+
+    // Call service to delete trip
+    const deleted = await deleteTrip(validatedParams.id, locals.supabase);
+
+    // If trip doesn't exist, return 404
+    if (!deleted) {
+      const errorResponse: ErrorResponseDto = {
+        error: "Not found",
+        message: `Trip with ID '${validatedParams.id}' does not exist`,
+      };
+
+      return new Response(JSON.stringify(errorResponse), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Return 204 No Content for successful deletion
+    return new Response(null, {
+      status: 204,
+    });
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error("Error in DELETE /api/trips/[id]:", error);
 
     // Return generic error response
     const errorResponse: ErrorResponseDto = {
