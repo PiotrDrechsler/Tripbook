@@ -25,6 +25,8 @@ export interface Database {
           created_at: string;
           description: string | null;
           id: string;
+          latitude: number | null;
+          longitude: number | null;
           map_url: string;
           name: string;
           trip_date: string | null;
@@ -35,6 +37,8 @@ export interface Database {
           created_at?: string;
           description?: string | null;
           id?: string;
+          latitude?: number | null;
+          longitude?: number | null;
           map_url: string;
           name: string;
           trip_date?: string | null;
@@ -45,6 +49,8 @@ export interface Database {
           created_at?: string;
           description?: string | null;
           id?: string;
+          latitude?: number | null;
+          longitude?: number | null;
           map_url?: string;
           name?: string;
           trip_date?: string | null;

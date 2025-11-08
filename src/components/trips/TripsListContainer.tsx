@@ -84,19 +84,19 @@ export default function TripsListContainer({ onTripSelected }: TripsListContaine
 
   // Success state with data
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold sm:text-3xl">Moje wycieczki</h1>
-          <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-            Zarządzaj swoimi trasami i planuj nowe wyprawy
-          </p>
-        </div>
+    <div className="flex h-full flex-col">
+      <div className="flex flex-shrink-0 items-center justify-between">
+        <h1 className="text-2xl font-bold sm:text-3xl">Moje wycieczki</h1>
         <AddTripButton onOpen={handleOpenModal} />
       </div>
 
-      <TripsList trips={data.data} onTripSelected={handleTripSelected} />
-      <Pagination pagination={data.pagination} onPageChange={handlePageChange} />
+      <div className="mt-4 flex-1 overflow-auto">
+        <TripsList trips={data.data} onTripSelected={handleTripSelected} />
+      </div>
+
+      <div className="mt-4 flex-shrink-0 border-t bg-background pt-4">
+        <Pagination pagination={data.pagination} onPageChange={handlePageChange} />
+      </div>
 
       <CreateTripModal isOpen={isCreateModalOpen} onClose={handleCloseModal} onSuccess={handleTripCreated} />
     </div>
