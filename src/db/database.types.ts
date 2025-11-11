@@ -26,6 +26,7 @@ export interface Database {
           description: string | null;
           id: string;
           latitude: number | null;
+          locations: Json;
           longitude: number | null;
           map_url: string;
           name: string;
@@ -38,6 +39,7 @@ export interface Database {
           description?: string | null;
           id?: string;
           latitude?: number | null;
+          locations?: Json;
           longitude?: number | null;
           map_url: string;
           name: string;
@@ -50,6 +52,7 @@ export interface Database {
           description?: string | null;
           id?: string;
           latitude?: number | null;
+          locations?: Json;
           longitude?: number | null;
           map_url?: string;
           name?: string;

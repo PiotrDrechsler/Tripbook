@@ -14,6 +14,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Spinner } from "./Spinner";
+import { RouteInfo } from "./RouteInfo";
 
 // Lazy load MapPreview component
 const MapPreview = lazy(() => import("./MapPreview").then((module) => ({ default: module.MapPreview })));
@@ -146,26 +147,33 @@ export function TripDetailsView({ trip }: TripDetailsViewProps) {
           trip.longitude !== null &&
           typeof trip.latitude === "number" &&
           typeof trip.longitude === "number" ? (
-            <div className="mb-4 rounded-lg border border-green-500/50 bg-green-500/10 p-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-green-700 dark:text-green-400">📍 Współrzędne:</span>
-                  <span className="text-sm font-mono text-green-700 dark:text-green-400">
-                    {formatCoordinatesDMS(trip.latitude, trip.longitude)}
-                  </span>
+            <>
+              <div className="mb-4 rounded-lg border border-green-500/50 bg-green-500/10 p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-green-700 dark:text-green-400">📍 Współrzędne:</span>
+                    <span className="text-sm font-mono text-green-700 dark:text-green-400">
+                      {formatCoordinatesDMS(trip.latitude, trip.longitude)}
+                    </span>
+                  </div>
+                  <Button asChild variant="outline" size="sm">
+                    <a
+                      href={`https://maps.google.com/maps?q=${trip.latitude},${trip.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs"
+                    >
+                      Google Maps
+                    </a>
+                  </Button>
                 </div>
-                <Button asChild variant="outline" size="sm">
-                  <a
-                    href={`https://maps.google.com/maps?q=${trip.latitude},${trip.longitude}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs"
-                  >
-                    Google Maps
-                  </a>
-                </Button>
               </div>
-            </div>
+
+              {/* Route information */}
+              <div className="mb-4">
+                <RouteInfo tripId={trip.id} />
+              </div>
+            </>
           ) : (
             <div className="mb-4 rounded-lg border border-muted bg-muted/20 p-3">
               <div className="flex items-center gap-2">

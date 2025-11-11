@@ -1,13 +1,15 @@
 import React from "react";
 import type { TripDto } from "@/types";
+import type { RouteResult } from "@/lib/services/routesService";
 import { formatCoordinatesDMS } from "@/lib/utils/coordinates";
 
 interface TripListItemProps {
   trip: TripDto;
   onTripSelected: (tripId: string) => void;
+  routeInfo?: RouteResult;
 }
 
-export function TripListItem({ trip, onTripSelected }: TripListItemProps) {
+export function TripListItem({ trip, onTripSelected, routeInfo }: TripListItemProps) {
   // Format date using Intl.DateTimeFormat
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -16,6 +18,26 @@ export function TripListItem({ trip, onTripSelected }: TripListItemProps) {
       month: "long",
       day: "numeric",
     }).format(date);
+  };
+
+  // Format distance
+  const formatDistance = (meters: number): string => {
+    if (meters < 1000) {
+      return `${meters} m`;
+    }
+    const kilometers = meters / 1000;
+    return `${kilometers.toFixed(1)} km`;
+  };
+
+  // Format duration
+  const formatDuration = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}min`;
+    }
+    return `${minutes}min`;
   };
 
   const handleClick = () => {
@@ -95,6 +117,46 @@ export function TripListItem({ trip, onTripSelected }: TripListItemProps) {
                 <span className="text-xs italic opacity-60">Brak współrzędnych</span>
               )}
             </div>
+
+            {/* Route info from cache */}
+            {routeInfo && (
+              <div className="flex items-center gap-3 text-sm">
+                <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
+                  <svg
+                    className="size-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                    />
+                  </svg>
+                  <span className="font-semibold">{formatDistance(routeInfo.distanceMeters)}</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
+                  <svg
+                    className="size-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <span className="font-semibold">{formatDuration(routeInfo.durationSeconds)}</span>
+                </div>
+              </div>
+            )}
           </div>
           {trip.description && <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{trip.description}</p>}
         </div>

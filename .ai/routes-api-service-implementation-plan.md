@@ -106,15 +106,25 @@ class RoutesService {
 
 ## 7. Plan wdrożenia krok po kroku
 
-1. `npm install @supabase/supabase-js` (jeśli potrzebne).
-2. Stwórz `src/lib/services/routesService.ts`.
-3. Zaimportuj `SupabaseClient`, zdefiniuj typy `LatLng`, `RoutesRequestBody`, `RawRoutesResponse`, `RouteResult`.
-4. Zaimplementuj konstruktor (pobranie `GOOGLE_ROUTES_API_KEY`).
-5. Zaimplementuj `getUserLocation()` z obsługą błędów.
-6. Zaimplementuj `getTripCoordinates()` odczytując `locations` z Supabase.
-7. Zaimplementuj `buildRequestBody()`, walidując co najmniej 2 punkty.
-8. Zaimplementuj `callRoutesApi()`, używając fetch w Astro API route.
-9. Zaimplementuj `parseResponse()`, mapując na `distanceMeters` i `durationSeconds`.
-10. Zdefiniuj i wyeksportuj custom Error klasy: `GeolocationError`, `ApiError`, itp.
-11. Utwórz plik serwera: `src/pages/api/routes.ts` (Astro endpoint) wywołujący `RoutesService`.
-12. Dodaj ENV: `GOOGLE_ROUTES_API_KEY=…` do `.env` i `.env.example`.
+1. ✅ `npm install @supabase/supabase-js` (jeśli potrzebne).
+2. ✅ Stwórz `src/lib/services/routesService.ts`.
+3. ✅ Zaimportuj `SupabaseClient`, zdefiniuj typy `LatLng`, `RoutesRequestBody`, `RawRoutesResponse`, `RouteResult`.
+4. ✅ Zaimplementuj konstruktor (pobranie `GOOGLE_ROUTES_API_KEY`).
+5. ✅ Zaimplementuj `getUserLocation()` z obsługą błędów.
+6. ✅ Zaimplementuj `getTripCoordinates()` odczytując `locations` z Supabase.
+7. ✅ Zaimplementuj `buildRequestBody()`, walidując co najmniej 2 punkty.
+8. ✅ Zaimplementuj `callRoutesApi()`, używając fetch w Astro API route.
+9. ✅ Zaimplementuj `parseResponse()`, mapując na `distanceMeters` i `durationSeconds`.
+10. ✅ Zdefiniuj i wyeksportuj custom Error klasy: `GeolocationError`, `ApiError`, itp.
+11. ✅ Utwórz plik serwera: `src/pages/api/routes.ts` (Astro endpoint) wywołujący `RoutesService`.
+12. ✅ Dodaj ENV: `GOOGLE_ROUTES_API_KEY=…` do `.env` i dokumentacji.
+
+## 8. Dodatkowe implementacje
+
+13. ✅ Utworzono migrację bazy danych: `supabase/migrations/20251111000000_add_locations_array_to_trips.sql`
+14. ✅ Zaktualizowano typy bazy danych: `src/db/database.types.ts` (dodano kolumnę `locations`)
+15. ✅ Utworzono hook React: `src/lib/hooks/useRouteInfo.ts`
+16. ✅ Utworzono komponent UI: `src/components/trips/RouteInfo.tsx`
+17. ✅ Zintegrowano komponent z widokiem szczegółów: `src/components/trips/TripDetailsView.tsx`
+18. ✅ Utworzono dokumentację: `src/lib/services/routesService.example.md`
+19. ✅ Zaktualizowano README.md z instrukcjami konfiguracji i opisem funkcjonalności

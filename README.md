@@ -23,6 +23,8 @@ Tripbook is a minimalist web application that lets you save, describe, and revis
 - Store URLs to mapy.com routes with built-in domain validation.
 - Add optional descriptions and dates to trips.
 - View, edit, and delete trips via a clean, single-page interface.
+- Calculate route distance and travel time from your current location using Google Routes API.
+- Support for multiple waypoints in trip routes.
 
 Built as an MVP for certification, Tripbook leverages Astro islands with React, TypeScript, and Supabase for a lightweight yet robust experience.
 
@@ -33,6 +35,7 @@ Built as an MVP for certification, Tripbook leverages Astro islands with React, 
 - **Language**: TypeScript 5
 - **Styling**: Tailwind CSS 4 + Shadcn/ui
 - **Backend-as-a-Service**: Supabase (Auth, Postgres, RLS, REST/GraphQL, real-time)
+- **External APIs**: Google Routes API (route calculation, distance, and travel time)
 - **Testing**: Playwright (E2E)
 - **CI/CD**: GitHub Actions → Netlify
 
@@ -42,6 +45,7 @@ Built as an MVP for certification, Tripbook leverages Astro islands with React, 
 
 - Node.js v22.14.0 (managed via [nvm](https://github.com/nvm-sh/nvm))
 - Supabase Project (URL & Public Anon Key)
+- Google Cloud Project with Routes API enabled (API Key)
 
 ### Setup
 
@@ -59,12 +63,23 @@ npm install
 # Create a .env file in the project root with:
 # SUPABASE_URL=<your-supabase-url>
 # SUPABASE_ANON_KEY=<your-anon-key>
+# GOOGLE_ROUTES_API_KEY=<your-google-routes-api-key>
 
 # Start the development server
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to view in your browser.
+
+### Google Routes API Setup
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the [Routes API](https://console.cloud.google.com/apis/library/routes.googleapis.com)
+4. Create an API key in [Credentials](https://console.cloud.google.com/apis/credentials)
+5. Add the API key to your `.env` file as `GOOGLE_ROUTES_API_KEY`
+
+For detailed usage examples, see [Routes Service Documentation](src/lib/services/routesService.example.md).
 
 ## Available Scripts
 
@@ -116,12 +131,21 @@ This repository contains the MVP implementation:
 - ✅ E2E testing pipeline
 - ✅ Automated CI/CD & Netlify deployment
 
+**Recent Additions**
+
+- ✅ Google Routes API integration for route calculation
+- ✅ Distance and travel time display from user's location
+- ✅ Support for multiple waypoints in trip routes
+- ✅ Interactive route information component
+
 **Next Steps**
 
 - Embed mapy.com map iframes inline
 - Expand test coverage
 - Add rich notifications UI
 - Implement soft deletes or archiving
+- Add route visualization on map
+- Cache calculated routes in database
 
 ## License
 
