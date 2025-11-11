@@ -96,6 +96,8 @@ export async function listTrips(params: ListTripsParams, supabase: SupabaseClien
     description: trip.description,
     map_url: trip.map_url,
     trip_date: trip.trip_date,
+    latitude: trip.latitude,
+    longitude: trip.longitude,
     created_at: trip.created_at,
     updated_at: trip.updated_at,
   }));

@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { useMapyLink } from "@/lib/hooks/useMapyLink";
+import { Spinner } from "./Spinner";
+import { formatCoordinatesDMS } from "@/lib/utils/coordinates";
 
 interface CreateTripFormProps {
   onClose: () => void;
@@ -21,6 +24,15 @@ export function CreateTripForm({ onClose, onSuccess }: CreateTripFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
+
+  // Use the mapy.com link expansion hook
+  const {
+    latitude,
+    longitude,
+    loading: mapyLoading,
+    error: mapyError,
+    success: mapySuccess,
+  } = useMapyLink(formData.map_url);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -63,6 +75,8 @@ export function CreateTripForm({ onClose, onSuccess }: CreateTripFormProps) {
       validationErrors.map_url = "Link do mapy jest wymagany";
     } else if (!validateMapUrl(formData.map_url)) {
       validationErrors.map_url = 'Link musi zawierać "mapy.com"';
+    } else if (latitude === null || longitude === null) {
+      validationErrors.map_url = "Najpierw wyciągnij współrzędne z linku mapy.com";
     }
 
     if (formData.description && formData.description.length > 2000) {
@@ -76,12 +90,19 @@ export function CreateTripForm({ onClose, onSuccess }: CreateTripFormProps) {
     }
 
     try {
+      // Include coordinates in the request
+      const tripData = {
+        ...formData,
+        latitude,
+        longitude,
+      };
+
       const response = await fetch("/api/trips", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(tripData),
       });
 
       if (!response.ok) {
@@ -167,11 +188,38 @@ export function CreateTripForm({ onClose, onSuccess }: CreateTripFormProps) {
           value={formData.map_url}
           onChange={handleChange}
           required
-          placeholder="https://mapy.com/..."
+          placeholder="Wklej link mapy.com (np. https://mapy.com/s/hokakucoto)"
           aria-invalid={!!errors.map_url}
           disabled={isSubmitting}
         />
         {errors.map_url && <p className="text-sm text-destructive">{errors.map_url}</p>}
+
+        {/* Coordinates extraction feedback */}
+        {mapyLoading && (
+          <div className="flex items-center gap-2 rounded-lg border border-muted bg-muted/50 p-3">
+            <Spinner />
+            <span className="text-sm text-muted-foreground">Wyciąganie współrzędnych...</span>
+          </div>
+        )}
+
+        {mapyError && !mapyLoading && formData.map_url && (
+          <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3">
+            <p className="text-sm text-destructive">⚠ {mapyError}</p>
+          </div>
+        )}
+
+        {mapySuccess &&
+          latitude !== null &&
+          longitude !== null &&
+          typeof latitude === "number" &&
+          typeof longitude === "number" && (
+            <div className="rounded-lg border border-green-500/50 bg-green-500/10 p-3">
+              <p className="text-sm font-mono text-green-700 dark:text-green-400">
+                ✓ Współrzędne: {formatCoordinatesDMS(latitude, longitude)}
+              </p>
+            </div>
+          )}
+
         <p className="text-xs text-muted-foreground">
           Link musi zawierać &quot;mapy.com&quot; •{" "}
           <a

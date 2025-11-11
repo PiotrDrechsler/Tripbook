@@ -6,9 +6,11 @@ const { id } = Astro.params;
 ---
 
 <Layout title="Edit Trip - Tripbook">
-  <main class="min-h-screen bg-background">
-    <div class="container mx-auto px-4 py-8 max-w-2xl">
-      <TripEditContainer id={id} client:load />
+  <main class="flex h-screen flex-col bg-background">
+    <div class="flex-1 overflow-auto">
+      <div class="container mx-auto px-4 py-8 max-w-2xl">
+        <TripEditContainer id={id} client:load />
+      </div>
     </div>
   </main>
 </Layout>

@@ -1,6 +1,7 @@
 import React, { useState, lazy, Suspense } from "react";
 import type { TripViewModel } from "@/types";
 import { Button } from "@/components/ui/button";
+import { formatCoordinatesDMS } from "@/lib/utils/coordinates";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,6 +14,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Spinner } from "./Spinner";
+import { RouteInfo } from "./RouteInfo";
 
 // Lazy load MapPreview component
 const MapPreview = lazy(() => import("./MapPreview").then((module) => ({ default: module.MapPreview })));
@@ -53,7 +55,7 @@ export function TripDetailsView({ trip }: TripDetailsViewProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex h-full flex-col">
       {/* Header with title and actions */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
@@ -105,59 +107,95 @@ export function TripDetailsView({ trip }: TripDetailsViewProps) {
         </div>
       </div>
 
-      {/* Description section */}
-      <div className="rounded-lg border bg-card p-6">
-        <h2 className="mb-3 text-lg font-semibold">Opis</h2>
-        <p className="text-muted-foreground whitespace-pre-wrap">{trip.description || "Brak opisu"}</p>
-      </div>
-
-      {/* Map section */}
-      <div className="rounded-lg border bg-card p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Mapa</h2>
-          <Button asChild variant="outline" size="sm">
-            <a href={trip.map_url} target="_blank" rel="noopener noreferrer">
-              <svg
-                className="size-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                />
-              </svg>
-              Otwórz w nowej karcie
-            </a>
-          </Button>
+      {/* Main content - fills available space */}
+      <div className="mt-2 grid flex-1 auto-rows-fr grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* Description section */}
+        <div className="flex flex-col overflow-hidden rounded-lg border bg-card p-6">
+          <h2 className="mb-3 text-lg font-semibold">Opis</h2>
+          <div className="flex-1 overflow-auto">
+            <p className="whitespace-pre-wrap text-muted-foreground">{trip.description || "Brak opisu"}</p>
+          </div>
         </div>
-        <Suspense fallback={<Spinner />}>
-          <MapPreview mapUrl={trip.map_url} tripName={trip.name} />
-        </Suspense>
+
+        {/* Map section */}
+        <div className="flex flex-col overflow-hidden rounded-lg border bg-card p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Mapa</h2>
+            <Button asChild variant="outline" size="sm">
+              <a href={trip.map_url} target="_blank" rel="noopener noreferrer">
+                <svg
+                  className="size-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
+                </svg>
+                Otwórz w nowej karcie
+              </a>
+            </Button>
+          </div>
+
+          {/* Coordinates display */}
+          {trip.latitude !== null &&
+          trip.longitude !== null &&
+          typeof trip.latitude === "number" &&
+          typeof trip.longitude === "number" ? (
+            <>
+              <div className="mb-4 rounded-lg border border-green-500/50 bg-green-500/10 p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-green-700 dark:text-green-400">📍 Współrzędne:</span>
+                    <span className="text-sm font-mono text-green-700 dark:text-green-400">
+                      {formatCoordinatesDMS(trip.latitude, trip.longitude)}
+                    </span>
+                  </div>
+                  <Button asChild variant="outline" size="sm">
+                    <a
+                      href={`https://maps.google.com/maps?q=${trip.latitude},${trip.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs"
+                    >
+                      Google Maps
+                    </a>
+                  </Button>
+                </div>
+              </div>
+
+              {/* Route information */}
+              <div className="mb-4">
+                <RouteInfo tripId={trip.id} />
+              </div>
+            </>
+          ) : (
+            <div className="mb-4 rounded-lg border border-muted bg-muted/20 p-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-muted-foreground">📍 Współrzędne:</span>
+                <span className="text-sm italic text-muted-foreground opacity-60">
+                  Brak współrzędnych - edytuj wycieczkę i dodaj link mapy.com
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div className="flex-1 overflow-hidden">
+            <Suspense fallback={<Spinner />}>
+              <MapPreview mapUrl={trip.map_url} tripName={trip.name} />
+            </Suspense>
+          </div>
+        </div>
       </div>
 
-      {/* Metadata section */}
-      <div className="rounded-lg border bg-card p-6">
-        <h2 className="mb-3 text-lg font-semibold">Informacje dodatkowe</h2>
-        <dl className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <dt className="text-muted-foreground">Utworzono:</dt>
-            <dd>{new Date(trip.created_at).toLocaleString("pl-PL")}</dd>
-          </div>
-          <div className="flex justify-between">
-            <dt className="text-muted-foreground">Ostatnia aktualizacja:</dt>
-            <dd>{new Date(trip.updated_at).toLocaleString("pl-PL")}</dd>
-          </div>
-        </dl>
-      </div>
-
-      {/* Back button */}
-      <div className="flex justify-start">
-        <Button variant="outline" asChild>
+      {/* Bottom navigation - always visible */}
+      <div className="mt-2 flex flex-shrink-0 items-center justify-between border-t border-border bg-background pt-4">
+        <Button variant="outline" size="sm" asChild>
           <a href="/trips">
             <svg
               className="size-4"
@@ -171,6 +209,12 @@ export function TripDetailsView({ trip }: TripDetailsViewProps) {
             Powrót do listy
           </a>
         </Button>
+
+        <div className="hidden text-sm text-muted-foreground sm:block">
+          <span>Utworzono: {new Date(trip.created_at).toLocaleDateString("pl-PL")}</span>
+          <span className="mx-2">•</span>
+          <span>Aktualizacja: {new Date(trip.updated_at).toLocaleDateString("pl-PL")}</span>
+        </div>
       </div>
     </div>
   );

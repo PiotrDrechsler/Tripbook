@@ -76,6 +76,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("Error in GET /api/trips:", error);
 
     // Return generic error response
@@ -154,6 +155,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       description: validatedData.description ?? null,
       map_url: validatedData.map_url,
       trip_date: validatedData.trip_date ?? null,
+      latitude: validatedData.latitude ?? null,
+      longitude: validatedData.longitude ?? null,
     };
 
     // Call service to create trip
@@ -166,6 +169,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       description: trip.description,
       map_url: trip.map_url,
       trip_date: trip.trip_date,
+      latitude: trip.latitude,
+      longitude: trip.longitude,
       created_at: trip.created_at,
       updated_at: trip.updated_at,
     };

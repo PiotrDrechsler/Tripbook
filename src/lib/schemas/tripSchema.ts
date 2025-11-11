@@ -35,6 +35,10 @@ export const createTripSchema = z.object({
     .refine((date) => !isNaN(Date.parse(date)), "Trip date must be a valid date")
     .nullable()
     .optional(),
+
+  latitude: z.number().min(-90).max(90).nullable().optional(),
+
+  longitude: z.number().min(-180).max(180).nullable().optional(),
 });
 
 /**
@@ -130,6 +134,10 @@ export const updateTripSchema = z.object({
     .refine((date) => !isNaN(Date.parse(date)), "Trip date must be a valid date")
     .nullable()
     .optional(),
+
+  latitude: z.number().min(-90).max(90).nullable().optional(),
+
+  longitude: z.number().min(-180).max(180).nullable().optional(),
 });
 
 /**

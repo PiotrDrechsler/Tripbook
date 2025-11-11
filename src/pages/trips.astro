@@ -4,9 +4,8 @@ import TripsListContainer from "../components/trips/TripsListContainer";
 ---
 
 <Layout title="My Trips - Tripbook">
-  <main class="min-h-screen bg-background">
-    <div class="container mx-auto px-4 py-8">
-      <h1 class="text-3xl font-bold mb-6">My Trips</h1>
+  <main class="flex h-screen flex-col bg-background">
+    <div class="container mx-auto flex h-full flex-col px-4 py-4">
       <TripsListContainer client:load />
     </div>
   </main>
