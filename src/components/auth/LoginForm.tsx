@@ -35,12 +35,33 @@ export default function LoginForm({ message }: LoginFormProps) {
 
     setIsSubmitting(true);
 
-    // TODO: API call will be implemented later
-    // For now, just simulate the submission
-    setTimeout(() => {
+    try {
+      // Call login API endpoint
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle error response
+        setError(data.message || "Wystąpił błąd podczas logowania");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Success - redirect to trips page
+      window.location.href = "/trips";
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("Login error:", err);
+      setError("Wystąpił błąd połączenia. Spróbuj ponownie.");
       setIsSubmitting(false);
-      console.log("Login attempt:", { email, password });
-    }, 1000);
+    }
   };
 
   // Display message from query params

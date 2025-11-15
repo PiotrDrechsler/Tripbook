@@ -5,8 +5,13 @@ import LoginForm from "@/components/auth/LoginForm";
 // Get message from query params
 const message = Astro.url.searchParams.get("message") || undefined;
 
-// TODO: Check if user is already logged in and redirect to /trips
-// This will be implemented when backend auth is ready
+// Per-page auth check: if user is already logged in, redirect to /trips
+// Note: middleware also handles this, but we add it here for extra safety
+const session = Astro.locals.session;
+
+if (session) {
+  return Astro.redirect("/trips");
+}
 ---
 
 <Layout title="Logowanie - Tripbook">

@@ -1,0 +1,272 @@
+# Diagramy Architektury - Integracja Logowania Tripbook
+
+## Flow Logowania - Sekwencja
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Browser
+    participant LoginForm
+    participant API as /api/auth/login
+    participant Supabase
+    participant Middleware
+    participant TripsPage as /trips
+
+    User->>Browser: Otwiera /login
+    Browser->>Middleware: GET /login
+    Middleware->>Middleware: Sprawdza sesję
+    alt Użytkownik zalogowany
+        Middleware->>Browser: Redirect → /trips
+    else Użytkownik niezalogowany
+        Middleware->>LoginForm: Renderuj formularz
+    end
+
+    LoginForm->>User: Wyświetla formularz
+    User->>LoginForm: Wypełnia (email, password)
+    User->>LoginForm: Klika "Zaloguj się"
+
+    LoginForm->>LoginForm: Walidacja kliencka
+    alt Walidacja failed
+        LoginForm->>User: Wyświetla błąd
+    else Walidacja OK
+        LoginForm->>API: POST {email, password}
+        API->>API: Walidacja Zod
+        alt Zod validation failed
+            API->>LoginForm: 400 {error, message}
+            LoginForm->>User: Wyświetla błąd
+        else Zod OK
+            API->>Supabase: signInWithPassword()
+            Supabase->>Supabase: Weryfikuje credentials
+            alt Credentials invalid
+                Supabase->>API: Error
+                API->>LoginForm: 401 {error, message}
+                LoginForm->>User: "Nieprawidłowy email lub hasło"
+            else Credentials valid
+                Supabase->>API: Session + Tokens
+                API->>Browser: Set cookies (via @supabase/ssr)
+                API->>LoginForm: 200 {message, user}
+                LoginForm->>Browser: window.location.href = "/trips"
+                Browser->>Middleware: GET /trips
+                Middleware->>Middleware: Odczytuje cookies
+                Middleware->>Supabase: getSession()
+                Supabase->>Middleware: Session valid
+                Middleware->>TripsPage: Renderuj z user context
+                TripsPage->>User: Wyświetla listę wycieczek
+            end
+        end
+    end
+```
+
+## Architektura Middleware - Przepływ Decyzji
+
+```mermaid
+flowchart TD
+    Start([HTTP Request]) --> Middleware{Middleware}
+    Middleware --> CreateClient[Utwórz Supabase Client z cookies]
+    CreateClient --> GetSession[Pobierz sesję: getSession]
+    GetSession --> SetLocals[Ustaw context.locals.user/session]
+
+    SetLocals --> CheckPath{Sprawdź ścieżkę}
+
+    CheckPath -->|/trips/*| Protected{Chroniona trasa}
+    Protected -->|Brak sesji| RedirectLogin[Redirect → /login?message=unauthorized]
+    Protected -->|Sesja OK| Next1[next]
+
+    CheckPath -->|/login, /register| AuthRoute{Trasa auth}
+    AuthRoute -->|Sesja istnieje| RedirectTrips[Redirect → /trips]
+    AuthRoute -->|Brak sesji| Next2[next]
+
+    CheckPath -->|Inne| Next3[next]
+
+    RedirectLogin --> End([Response])
+    RedirectTrips --> End
+    Next1 --> End
+    Next2 --> End
+    Next3 --> End
+```
+
+## Struktura Komponentów - Logowanie
+
+```mermaid
+graph TB
+    subgraph Browser
+        LoginPage[login.astro]
+        LoginForm[LoginForm.tsx]
+    end
+
+    subgraph Server
+        Middleware[middleware/index.ts]
+        LoginAPI[api/auth/login.ts]
+        SupabaseClient[supabase.client.ts]
+    end
+
+    subgraph External
+        Supabase[(Supabase Auth)]
+    end
+
+    subgraph Validation
+        AuthSchema[authSchema.ts]
+        Types[types.ts]
+    end
+
+    LoginPage -->|Renderuje| LoginForm
+    LoginForm -->|POST /api/auth/login| LoginAPI
+    LoginAPI -->|Waliduje| AuthSchema
+    LoginAPI -->|Używa| SupabaseClient
+    SupabaseClient -->|signInWithPassword| Supabase
+    Supabase -->|Session + Tokens| SupabaseClient
+    SupabaseClient -->|Set cookies| LoginAPI
+    LoginAPI -->|Response| LoginForm
+    LoginForm -->|Redirect| Middleware
+    Middleware -->|Używa| SupabaseClient
+    SupabaseClient -->|getSession| Supabase
+
+    AuthSchema -.->|Typy| Types
+    LoginAPI -.->|Używa| Types
+```
+
+## Zarządzanie Sesjami - Cookies Flow
+
+```mermaid
+sequenceDiagram
+    participant Client as Browser
+    participant Server as Astro Server
+    participant SSR as @supabase/ssr
+    participant Supabase as Supabase Auth
+
+    Note over Client,Supabase: Logowanie
+    Client->>Server: POST /api/auth/login
+    Server->>Supabase: signInWithPassword()
+    Supabase->>Server: {access_token, refresh_token}
+    Server->>SSR: cookies.set()
+    SSR->>Client: Set-Cookie: sb-*-auth-token
+    Note over Client: Cookies zapisane w przeglądarce
+
+    Note over Client,Supabase: Kolejne żądanie
+    Client->>Server: GET /trips
+    Note over Server: Middleware
+    Server->>SSR: cookies.get()
+    SSR->>Server: {access_token, refresh_token}
+    Server->>Supabase: getSession(tokens)
+    Supabase->>Server: {session, user}
+    Server->>Server: context.locals.user = user
+    Server->>Client: Renderuj /trips z user context
+
+    Note over Client,Supabase: Token wygasł (po 1h)
+    Client->>Server: GET /trips
+    Server->>SSR: cookies.get()
+    SSR->>Supabase: Refresh token
+    Supabase->>SSR: New access_token
+    SSR->>Client: Set-Cookie: nowy token
+    Server->>Client: Renderuj /trips
+```
+
+## Walidacja - Poziomy Zabezpieczeń
+
+```mermaid
+flowchart LR
+    User[Użytkownik] --> ClientVal{Walidacja Kliencka}
+    ClientVal -->|Błąd| ShowError1[Wyświetl błąd]
+    ClientVal -->|OK| SendAPI[Wyślij do API]
+
+    SendAPI --> ZodVal{Walidacja Zod}
+    ZodVal -->|Błąd| Return400[400 Bad Request]
+    ZodVal -->|OK| SupabaseAuth[Supabase Auth]
+
+    SupabaseAuth --> CheckCreds{Sprawdź credentials}
+    CheckCreds -->|Nieprawidłowe| Return401[401 Unauthorized]
+    CheckCreds -->|OK| SetSession[Ustaw sesję]
+
+    SetSession --> MiddlewareCheck{Middleware Check}
+    MiddlewareCheck -->|Brak sesji| RedirectLogin[Redirect /login]
+    MiddlewareCheck -->|Sesja OK| AllowAccess[Dostęp do /trips]
+
+    ShowError1 --> User
+    Return400 --> User
+    Return401 --> User
+    RedirectLogin --> User
+    AllowAccess --> Success[✅ Zalogowany]
+```
+
+## Mapowanie Błędów Supabase
+
+```mermaid
+graph TD
+    SupabaseError[Supabase Auth Error] --> CheckType{Typ błędu}
+
+    CheckType -->|Invalid login credentials| Polish1["Nieprawidłowy email lub hasło"]
+    CheckType -->|Email not confirmed| Polish2["Email nie został potwierdzony"]
+    CheckType -->|User not found| Polish3["Użytkownik nie istnieje"]
+    CheckType -->|Inne| Polish4["Nieprawidłowy email lub hasło"]
+
+    Polish1 --> Return[401 Response]
+    Polish2 --> Return
+    Polish3 --> Return
+    Polish4 --> Return
+
+    Return --> LoginForm[LoginForm.tsx]
+    LoginForm --> Display[Wyświetl użytkownikowi]
+```
+
+## Struktura Plików - Moduł Auth
+
+```mermaid
+graph TD
+    Root[src/] --> Pages[pages/]
+    Root --> Components[components/]
+    Root --> Lib[lib/]
+    Root --> DB[db/]
+    Root --> MW[middleware/]
+
+    Pages --> LoginPage[login.astro]
+    Pages --> API[api/]
+    API --> AuthAPI[auth/]
+    AuthAPI --> LoginEndpoint[login.ts]
+
+    Components --> Auth[auth/]
+    Auth --> LoginFormComp[LoginForm.tsx]
+
+    Lib --> Schemas[schemas/]
+    Schemas --> AuthSchema[authSchema.ts]
+
+    DB --> SupabaseClient[supabase.client.ts]
+
+    MW --> MiddlewareFile[index.ts]
+
+    Root --> Types[types.ts]
+    Root --> EnvD[env.d.ts]
+
+    style LoginEndpoint fill:#90EE90
+    style LoginFormComp fill:#90EE90
+    style AuthSchema fill:#90EE90
+    style SupabaseClient fill:#FFD700
+    style MiddlewareFile fill:#FFD700
+    style Types fill:#FFD700
+    style EnvD fill:#FFD700
+
+    classDef new fill:#90EE90
+    classDef modified fill:#FFD700
+```
+
+**Legenda:**
+
+- 🟢 Zielony = Nowe pliki
+- 🟡 Żółty = Zmodyfikowane pliki
+
+---
+
+## Użycie Diagramów
+
+Te diagramy można renderować w:
+
+- GitHub (automatycznie)
+- VS Code z rozszerzeniem "Markdown Preview Mermaid Support"
+- [Mermaid Live Editor](https://mermaid.live/)
+- Dokumentacji projektu
+
+Aby edytować:
+
+1. Skopiuj kod Mermaid
+2. Wklej do [mermaid.live](https://mermaid.live/)
+3. Edytuj wizualnie
+4. Skopiuj zaktualizowany kod
