@@ -1,0 +1,16 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import LoginForm from "@/components/auth/LoginForm";
+
+// Get message from query params
+const message = Astro.url.searchParams.get("message") || undefined;
+
+// TODO: Check if user is already logged in and redirect to /trips
+// This will be implemented when backend auth is ready
+---
+
+<Layout title="Logowanie - Tripbook">
+  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <LoginForm client:load message={message} />
+  </div>
+</Layout>
