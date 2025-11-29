@@ -23,6 +23,20 @@ export const prerender = false;
  */
 export const GET: APIRoute = async ({ url, locals }) => {
   try {
+    // Check authentication
+    const user = locals.user;
+    if (!user) {
+      const errorResponse: ErrorResponseDto = {
+        error: "Unauthorized",
+        message: "Musisz być zalogowany",
+      };
+
+      return new Response(JSON.stringify(errorResponse), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     // Parse query parameters from URL
     const searchParams = url.searchParams;
     const queryParams = {
@@ -67,8 +81,8 @@ export const GET: APIRoute = async ({ url, locals }) => {
       sortDirection,
     };
 
-    // Call service to list trips
-    const response = await listTrips(params, locals.supabase);
+    // Call service to list trips (filtered by user_id)
+    const response = await listTrips(params, user.id, locals.supabase);
 
     // Return success response
     return new Response(JSON.stringify(response), {
@@ -110,6 +124,20 @@ export const GET: APIRoute = async ({ url, locals }) => {
  */
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
+    // Check authentication
+    const user = locals.user;
+    if (!user) {
+      const errorResponse: ErrorResponseDto = {
+        error: "Unauthorized",
+        message: "Musisz być zalogowany",
+      };
+
+      return new Response(JSON.stringify(errorResponse), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     // Parse request body
     let body: unknown;
     try {
@@ -159,8 +187,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       longitude: validatedData.longitude ?? null,
     };
 
-    // Call service to create trip
-    const trip = await createTrip(command, locals.supabase);
+    // Call service to create trip (with user_id from session)
+    const trip = await createTrip(command, user.id, locals.supabase);
 
     // Map database record to TripDto (exclude user_id)
     const tripDto: TripDto = {

@@ -22,6 +22,20 @@ export const prerender = false;
  */
 export const GET: APIRoute = async ({ params, locals }) => {
   try {
+    // Check authentication
+    const user = locals.user;
+    if (!user) {
+      const errorResponse: ErrorResponseDto = {
+        error: "Unauthorized",
+        message: "Musisz być zalogowany",
+      };
+
+      return new Response(JSON.stringify(errorResponse), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     // Validate path parameters with Zod
     let validatedParams;
     try {
@@ -45,10 +59,10 @@ export const GET: APIRoute = async ({ params, locals }) => {
       throw error;
     }
 
-    // Call service to get trip by ID
-    const trip = await getTripById(validatedParams.id, locals.supabase);
+    // Call service to get trip by ID (filtered by user_id)
+    const trip = await getTripById(validatedParams.id, user.id, locals.supabase);
 
-    // Handle not found case
+    // Handle not found case (or not owned by user)
     if (!trip) {
       const errorResponse: ErrorResponseDto = {
         error: "Not found",
@@ -118,6 +132,20 @@ export const GET: APIRoute = async ({ params, locals }) => {
  */
 export const PATCH: APIRoute = async ({ params, request, locals }) => {
   try {
+    // Check authentication
+    const user = locals.user;
+    if (!user) {
+      const errorResponse: ErrorResponseDto = {
+        error: "Unauthorized",
+        message: "Musisz być zalogowany",
+      };
+
+      return new Response(JSON.stringify(errorResponse), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     // Validate path parameters with Zod
     let validatedParams;
     try {
@@ -197,10 +225,10 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     // Convert validated input to UpdateTripCommand
     const command: UpdateTripCommand = validatedBody;
 
-    // Call service to update trip
-    const trip = await updateTrip(validatedParams.id, command, locals.supabase);
+    // Call service to update trip (verifies ownership)
+    const trip = await updateTrip(validatedParams.id, command, user.id, locals.supabase);
 
-    // Handle not found case
+    // Handle not found case (or not owned by user)
     if (!trip) {
       const errorResponse: ErrorResponseDto = {
         error: "Not found",
@@ -263,6 +291,20 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
  */
 export const DELETE: APIRoute = async ({ params, locals }) => {
   try {
+    // Check authentication
+    const user = locals.user;
+    if (!user) {
+      const errorResponse: ErrorResponseDto = {
+        error: "Unauthorized",
+        message: "Musisz być zalogowany",
+      };
+
+      return new Response(JSON.stringify(errorResponse), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     // Validate tripId parameter
     let validatedParams;
     try {
@@ -286,10 +328,10 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
       throw error;
     }
 
-    // Call service to delete trip
-    const deleted = await deleteTrip(validatedParams.id, locals.supabase);
+    // Call service to delete trip (verifies ownership)
+    const deleted = await deleteTrip(validatedParams.id, user.id, locals.supabase);
 
-    // If trip doesn't exist, return 404
+    // If trip doesn't exist or not owned by user, return 404
     if (!deleted) {
       const errorResponse: ErrorResponseDto = {
         error: "Not found",
