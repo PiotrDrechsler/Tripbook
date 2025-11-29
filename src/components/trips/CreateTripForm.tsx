@@ -131,9 +131,9 @@ export function CreateTripForm({ onClose, onSuccess }: CreateTripFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" data-testid="create-trip-form">
       {generalError && (
-        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4" data-testid="form-error">
           <p className="text-sm text-destructive">{generalError}</p>
         </div>
       )}
@@ -154,8 +154,13 @@ export function CreateTripForm({ onClose, onSuccess }: CreateTripFormProps) {
           placeholder="np. Wycieczka do Tatr"
           aria-invalid={!!errors.name}
           disabled={isSubmitting}
+          data-testid="trip-name-input"
         />
-        {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+        {errors.name && (
+          <p className="text-sm text-destructive" data-testid="trip-name-error">
+            {errors.name}
+          </p>
+        )}
       </div>
 
       {/* Description field */}
@@ -171,8 +176,13 @@ export function CreateTripForm({ onClose, onSuccess }: CreateTripFormProps) {
           placeholder="Opisz swoją wycieczkę..."
           aria-invalid={!!errors.description}
           disabled={isSubmitting}
+          data-testid="trip-description-input"
         />
-        {errors.description && <p className="text-sm text-destructive">{errors.description}</p>}
+        {errors.description && (
+          <p className="text-sm text-destructive" data-testid="trip-description-error">
+            {errors.description}
+          </p>
+        )}
         <p className="text-xs text-muted-foreground">{(formData.description || "").length} / 2000 znaków</p>
       </div>
 
@@ -191,19 +201,30 @@ export function CreateTripForm({ onClose, onSuccess }: CreateTripFormProps) {
           placeholder="Wklej link mapy.com (np. https://mapy.com/s/hokakucoto)"
           aria-invalid={!!errors.map_url}
           disabled={isSubmitting}
+          data-testid="trip-map-url-input"
         />
-        {errors.map_url && <p className="text-sm text-destructive">{errors.map_url}</p>}
+        {errors.map_url && (
+          <p className="text-sm text-destructive" data-testid="trip-map-url-error">
+            {errors.map_url}
+          </p>
+        )}
 
         {/* Coordinates extraction feedback */}
         {mapyLoading && (
-          <div className="flex items-center gap-2 rounded-lg border border-muted bg-muted/50 p-3">
+          <div
+            className="flex items-center gap-2 rounded-lg border border-muted bg-muted/50 p-3"
+            data-testid="coordinates-loading"
+          >
             <Spinner />
             <span className="text-sm text-muted-foreground">Wyciąganie współrzędnych...</span>
           </div>
         )}
 
         {mapyError && !mapyLoading && formData.map_url && (
-          <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3">
+          <div
+            className="rounded-lg border border-destructive/50 bg-destructive/10 p-3"
+            data-testid="coordinates-error"
+          >
             <p className="text-sm text-destructive">⚠ {mapyError}</p>
           </div>
         )}
@@ -213,7 +234,10 @@ export function CreateTripForm({ onClose, onSuccess }: CreateTripFormProps) {
           longitude !== null &&
           typeof latitude === "number" &&
           typeof longitude === "number" && (
-            <div className="rounded-lg border border-green-500/50 bg-green-500/10 p-3">
+            <div
+              className="rounded-lg border border-green-500/50 bg-green-500/10 p-3"
+              data-testid="coordinates-success"
+            >
               <p className="text-sm font-mono text-green-700 dark:text-green-400">
                 ✓ Współrzędne: {formatCoordinatesDMS(latitude, longitude)}
               </p>
@@ -244,16 +268,28 @@ export function CreateTripForm({ onClose, onSuccess }: CreateTripFormProps) {
           onChange={handleChange}
           aria-invalid={!!errors.trip_date}
           disabled={isSubmitting}
+          data-testid="trip-date-input"
         />
-        {errors.trip_date && <p className="text-sm text-destructive">{errors.trip_date}</p>}
+        {errors.trip_date && (
+          <p className="text-sm text-destructive" data-testid="trip-date-error">
+            {errors.trip_date}
+          </p>
+        )}
       </div>
 
       {/* Form actions */}
       <div className="flex flex-col gap-3 pt-4 sm:flex-row">
-        <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
+        <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto" data-testid="submit-trip-button">
           {isSubmitting ? "Zapisywanie..." : "Zapisz"}
         </Button>
-        <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="w-full sm:w-auto">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onClose}
+          disabled={isSubmitting}
+          className="w-full sm:w-auto"
+          data-testid="cancel-trip-button"
+        >
           Anuluj
         </Button>
       </div>
