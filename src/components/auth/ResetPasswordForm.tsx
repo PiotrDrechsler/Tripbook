@@ -1,21 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
-interface ResetPasswordFormProps {
-  token: string | null;
-}
-
-export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
+export default function ResetPasswordForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [hasToken, setHasToken] = useState(false);
+
+  // Extract token from URL hash (Supabase sends it as #access_token=...)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get("access_token");
+      setHasToken(!!accessToken);
+    }
+  }, []);
 
   // Check if token is valid
-  if (!token) {
+  if (!hasToken) {
     return (
       <div className="w-full max-w-md mx-auto p-6 space-y-6">
         <div className="p-6 bg-red-50 border border-red-200 rounded-lg space-y-4">
@@ -58,18 +64,38 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
     setIsSubmitting(true);
 
-    // TODO: API call will be implemented later
-    // For now, just simulate the submission
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSuccess(true);
-      console.log("Password reset for token:", token);
+    try {
+      // Call reset password API endpoint
+      const response = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ password, confirmPassword }),
+      });
 
-      // Simulate redirect after success
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle error response
+        setError(data.message || "Wystąpił błąd podczas zmiany hasła");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Success - show success message and redirect
+      setSuccess(true);
+
+      // Redirect to login after 2 seconds
       setTimeout(() => {
-        // window.location.href = "/login";
+        window.location.href = "/login?message=password_reset_success";
       }, 2000);
-    }, 1000);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("Reset password error:", err);
+      setError("Wystąpił błąd połączenia. Spróbuj ponownie.");
+      setIsSubmitting(false);
+    }
   };
 
   if (success) {

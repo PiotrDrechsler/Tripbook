@@ -73,6 +73,7 @@ export default function LoginForm({ message }: LoginFormProps) {
       unauthorized: "Musisz się zalogować, aby uzyskać dostęp.",
       logout_success: "Wylogowano pomyślnie.",
       registration_success: "Konto zostało utworzone! Sprawdź email i potwierdź konto, aby się zalogować.",
+      password_reset_success: "Hasło zostało zmienione! Możesz się teraz zalogować.",
     };
 
     return messages[messageCode] || null;

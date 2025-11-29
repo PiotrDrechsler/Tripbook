@@ -32,13 +32,33 @@ export default function ForgotPasswordForm() {
 
     setIsSubmitting(true);
 
-    // TODO: API call will be implemented later
-    // For now, just simulate the submission
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      // Call forgot password API endpoint
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle error response
+        setError(data.message || "Wystąpił błąd podczas wysyłania linku");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Success - show success message
       setSuccess(true);
-      console.log("Password reset request for:", email);
-    }, 1000);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("Forgot password error:", err);
+      setError("Wystąpił błąd połączenia. Spróbuj ponownie.");
+      setIsSubmitting(false);
+    }
   };
 
   if (success) {
