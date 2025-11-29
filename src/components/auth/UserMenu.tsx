@@ -11,24 +11,35 @@ export default function UserMenu({ userEmail }: UserMenuProps) {
   const handleLogout = async () => {
     setIsLoggingOut(true);
 
-    // TODO: API call will be implemented later
-    // For now, just simulate the logout
-    setTimeout(() => {
-      console.log("Logging out user:", userEmail);
-      // window.location.href = "/login?message=logout_success";
-    }, 500);
+    try {
+      // Call logout API endpoint
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        // eslint-disable-next-line no-console
+        console.error("Logout failed:", await response.text());
+        setIsLoggingOut(false);
+        return;
+      }
+
+      // Success - redirect to login page with success message
+      window.location.href = "/login?message=logout_success";
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("Logout error:", error);
+      setIsLoggingOut(false);
+    }
   };
 
   return (
-    <div className="flex items-center gap-4 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20">
-      <span className="text-sm text-gray-700 font-medium">{userEmail}</span>
-      <Button
-        onClick={handleLogout}
-        disabled={isLoggingOut}
-        variant="outline"
-        size="sm"
-        className="bg-white hover:bg-gray-100"
-      >
+    <div className="flex items-center gap-3">
+      <span className="text-sm text-gray-600 hidden sm:inline">{userEmail}</span>
+      <Button onClick={handleLogout} disabled={isLoggingOut} variant="outline" size="sm">
         {isLoggingOut ? "Wylogowywanie..." : "Wyloguj"}
       </Button>
     </div>
