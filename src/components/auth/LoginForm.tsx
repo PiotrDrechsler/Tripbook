@@ -72,6 +72,7 @@ export default function LoginForm({ message }: LoginFormProps) {
       session_expired: "Twoja sesja wygasła. Zaloguj się ponownie.",
       unauthorized: "Musisz się zalogować, aby uzyskać dostęp.",
       logout_success: "Wylogowano pomyślnie.",
+      registration_success: "Konto zostało utworzone! Sprawdź email i potwierdź konto, aby się zalogować.",
     };
 
     return messages[messageCode] || null;

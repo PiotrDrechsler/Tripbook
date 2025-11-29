@@ -44,18 +44,38 @@ export default function RegisterForm() {
 
     setIsSubmitting(true);
 
-    // TODO: API call will be implemented later
-    // For now, just simulate the submission
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSuccess(true);
-      console.log("Registration attempt:", { email, password });
+    try {
+      // Call register API endpoint
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password, confirmPassword }),
+      });
 
-      // Simulate redirect after success
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle error response
+        setError(data.message || "Wystąpił błąd podczas rejestracji");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Success - show success message
+      setSuccess(true);
+
+      // Redirect to login after 3 seconds
       setTimeout(() => {
-        // window.location.href = "/login";
-      }, 2000);
-    }, 1000);
+        window.location.href = "/login?message=registration_success";
+      }, 3000);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("Registration error:", err);
+      setError("Wystąpił błąd połączenia. Spróbuj ponownie.");
+      setIsSubmitting(false);
+    }
   };
 
   if (success) {
@@ -64,7 +84,13 @@ export default function RegisterForm() {
         <div className="p-6 bg-green-50 border border-green-200 rounded-lg text-center space-y-4">
           <div className="text-green-600 text-5xl">✓</div>
           <h2 className="text-xl font-semibold text-green-800">Konto zostało utworzone!</h2>
-          <p className="text-green-700">Przekierowywanie do logowania...</p>
+          <div className="space-y-2">
+            <p className="text-green-700">Na Twój adres email został wysłany link potwierdzający.</p>
+            <p className="text-sm text-green-600">
+              Sprawdź swoją skrzynkę pocztową (w tym folder SPAM) i kliknij w link, aby aktywować konto.
+            </p>
+          </div>
+          <p className="text-sm text-green-600 mt-4">Przekierowywanie do logowania...</p>
         </div>
       </div>
     );

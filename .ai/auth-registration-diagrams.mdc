@@ -1,0 +1,346 @@
+# 📊 Diagramy Flow - Rejestracja Użytkowników
+
+## 1. Pełny Flow Rejestracji (Happy Path)
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Browser
+    participant Middleware
+    participant RegisterPage as register.astro
+    participant RegisterForm as RegisterForm.tsx
+    participant API as /api/auth/register
+    participant Supabase
+    participant Email
+
+    User->>Browser: Wejście na /register
+    Browser->>Middleware: GET /register
+    Middleware->>Middleware: Check session
+    alt User zalogowany
+        Middleware->>Browser: Redirect to /trips
+    else User niezalogowany
+        Middleware->>RegisterPage: Continue
+        RegisterPage->>RegisterPage: Per-page check
+        RegisterPage->>Browser: Render RegisterForm
+        Browser->>User: Display form
+    end
+
+    User->>RegisterForm: Fill form + Submit
+    RegisterForm->>RegisterForm: Client validation
+    RegisterForm->>API: POST /api/auth/register
+    API->>API: Zod validation
+    API->>Supabase: auth.signUp()
+    Supabase->>Supabase: Create user
+    Supabase->>Email: Send confirmation email
+    Supabase->>API: Return success
+    API->>RegisterForm: 201 Created
+    RegisterForm->>Browser: Show success screen
+    Browser->>User: "Sprawdź email!"
+    
+    Note over Browser,User: Wait 3 seconds
+    
+    RegisterForm->>Browser: window.location.href = "/login?message=registration_success"
+    Browser->>User: Redirect to login page
+
+    User->>Email: Open email
+    User->>Email: Click confirmation link
+    Email->>Supabase: Confirm email
+    Supabase->>Supabase: Set email_confirmed = true
+    Supabase->>Browser: Redirect to app
+    Browser->>User: "Email potwierdzony!"
+```
+
+---
+
+## 2. Walidacja i Obsługa Błędów
+
+```mermaid
+graph TD
+    A[User submits form] --> B{Client validation}
+    B -->|Empty fields| C[❌ Wszystkie pola wymagane]
+    B -->|Invalid email| D[❌ Nieprawidłowy format]
+    B -->|Password < 6| E[❌ Min 6 znaków]
+    B -->|Passwords don't match| F[❌ Hasła różne]
+    B -->|Valid| G[POST /api/auth/register]
+    
+    G --> H{Server validation - Zod}
+    H -->|Invalid| I[❌ 400 Validation Error]
+    H -->|Valid| J[supabase.auth.signUp]
+    
+    J --> K{Supabase Response}
+    K -->|User exists| L[❌ 409 Conflict]
+    K -->|Success| M[✅ 201 Created]
+    
+    M --> N[Send confirmation email]
+    N --> O[Show success screen]
+    O --> P[Redirect to /login after 3s]
+    
+    C --> Q[Display error in form]
+    D --> Q
+    E --> Q
+    F --> Q
+    I --> Q
+    L --> Q
+    
+    style M fill:#90EE90
+    style O fill:#90EE90
+    style P fill:#90EE90
+    style Q fill:#FFB6C1
+```
+
+---
+
+## 3. Porównanie: Login vs Register Flow
+
+```mermaid
+graph LR
+    subgraph Login Flow
+        L1[/login page] --> L2[LoginForm]
+        L2 --> L3[POST /api/auth/login]
+        L3 --> L4[signInWithPassword]
+        L4 --> L5{Success?}
+        L5 -->|Yes| L6[Redirect to /trips]
+        L5 -->|No| L7[Show error]
+    end
+
+    subgraph Register Flow
+        R1[/register page] --> R2[RegisterForm]
+        R2 --> R3[POST /api/auth/register]
+        R3 --> R4[signUp]
+        R4 --> R5{Success?}
+        R5 -->|Yes| R6[Send email]
+        R6 --> R7[Success screen]
+        R7 --> R8[Redirect to /login]
+        R5 -->|No| R9[Show error]
+    end
+
+    style L6 fill:#90EE90
+    style R8 fill:#90EE90
+```
+
+---
+
+## 4. Email Confirmation Flow
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Supabase
+    participant Email
+    participant Browser
+    participant LoginAPI as /api/auth/login
+
+    Note over User,Supabase: Po rejestracji
+    Supabase->>Email: Send confirmation email
+    Note over Email: Email w skrzynce użytkownika
+    
+    alt Scenario A: User confirms email
+        User->>Email: Open email
+        User->>Email: Click confirmation link
+        Email->>Supabase: GET /auth/v1/verify?token=xxx
+        Supabase->>Supabase: Mark email_confirmed = true
+        Supabase->>Browser: Redirect to app
+        Browser->>User: "Email potwierdzony!"
+        
+        User->>Browser: Navigate to /login
+        User->>LoginAPI: POST credentials
+        LoginAPI->>Supabase: signInWithPassword()
+        Supabase->>LoginAPI: ✅ Success + session
+        LoginAPI->>Browser: Redirect to /trips
+    end
+    
+    alt Scenario B: User tries to login WITHOUT confirming
+        User->>Browser: Navigate to /login
+        User->>LoginAPI: POST credentials
+        LoginAPI->>Supabase: signInWithPassword()
+        Supabase->>LoginAPI: ❌ Email not confirmed
+        LoginAPI->>Browser: Error message
+        Browser->>User: "Sprawdź email i potwierdź konto"
+    end
+```
+
+---
+
+## 5. Defense in Depth - Registration Security
+
+```mermaid
+graph TB
+    A[User navigates to /register] --> B{Middleware Check}
+    B -->|Session exists| C[❌ Redirect to /trips]
+    B -->|No session| D[Continue to page]
+    
+    D --> E{Per-page Auth Check}
+    E -->|Session exists| F[❌ Redirect to /trips]
+    E -->|No session| G[Render RegisterForm]
+    
+    G --> H[User fills form]
+    H --> I{Client Validation}
+    I -->|Invalid| J[❌ Show error]
+    I -->|Valid| K[POST to API]
+    
+    K --> L{Zod Server Validation}
+    L -->|Invalid| M[❌ 400 Error]
+    L -->|Valid| N[Supabase signUp]
+    
+    N --> O{Supabase Checks}
+    O -->|Email exists| P[❌ 409 Conflict]
+    O -->|Valid| Q[Create user]
+    
+    Q --> R[Hash password - bcrypt]
+    R --> S[Save to DB]
+    S --> T[Send confirmation email]
+    T --> U[✅ 201 Success]
+    
+    style C fill:#FFB6C1
+    style F fill:#FFB6C1
+    style J fill:#FFB6C1
+    style M fill:#FFB6C1
+    style P fill:#FFB6C1
+    style U fill:#90EE90
+```
+
+---
+
+## 6. State Machine - Registration Form
+
+```mermaid
+stateDiagram-v2
+    [*] --> Idle: Page loaded
+    
+    Idle --> Typing: User types
+    Typing --> Typing: Continues typing
+    Typing --> Submitting: Clicks "Register"
+    
+    Submitting --> ClientValidation: Validate form
+    
+    ClientValidation --> ShowError: Validation fails
+    ClientValidation --> APICall: Validation passes
+    
+    ShowError --> Typing: User fixes input
+    
+    APICall --> Processing: Fetch /api/auth/register
+    
+    Processing --> ShowError: API error (400/409/500)
+    Processing --> Success: 201 Created
+    
+    Success --> Redirecting: Show success screen
+    
+    Redirecting --> [*]: Navigate to /login (3s)
+    
+    note right of Success
+        "Sprawdź email!"
+        "Link potwierdzający został wysłany"
+    end note
+    
+    note right of ShowError
+        Errors:
+        - Validation errors
+        - User already exists
+        - Network errors
+    end note
+```
+
+---
+
+## 7. Database State After Registration
+
+```mermaid
+graph LR
+    subgraph Supabase Database
+        A[auth.users table]
+        B[User Record]
+    end
+    
+    B --> C[id: uuid]
+    B --> D[email: string]
+    B --> E[encrypted_password: string]
+    B --> F[email_confirmed_at: NULL]
+    B --> G[created_at: timestamp]
+    B --> H[confirmation_token: string]
+    
+    style F fill:#FFB6C1
+    
+    I[User clicks email link] --> J[Update record]
+    J --> K[email_confirmed_at: timestamp]
+    
+    style K fill:#90EE90
+```
+
+---
+
+## 8. Error Handling Flowchart
+
+```mermaid
+flowchart TD
+    Start[API receives request] --> Parse{Parse JSON}
+    Parse -->|Fail| E1[❌ 400 Bad Request]
+    Parse -->|Success| Validate{Zod Validation}
+    
+    Validate -->|Fail| E2[❌ 400 Validation Error<br/>with field name]
+    Validate -->|Success| SignUp[supabase.auth.signUp]
+    
+    SignUp --> Check{Check error}
+    Check -->|User exists| E3[❌ 409 Conflict<br/>'Email już istnieje']
+    Check -->|Password weak| E4[❌ 400 Bad Request<br/>'Hasło za słabe']
+    Check -->|Email invalid| E5[❌ 400 Bad Request<br/>'Email nieprawidłowy']
+    Check -->|Other error| E6[❌ 500 Internal Error]
+    Check -->|No error| Success{User created?}
+    
+    Success -->|No user data| E7[❌ 500 Internal Error]
+    Success -->|User data OK| S1[✅ 201 Created<br/>Return user info]
+    
+    style S1 fill:#90EE90
+    style E1 fill:#FFB6C1
+    style E2 fill:#FFB6C1
+    style E3 fill:#FFB6C1
+    style E4 fill:#FFB6C1
+    style E5 fill:#FFB6C1
+    style E6 fill:#FFB6C1
+    style E7 fill:#FFB6C1
+```
+
+---
+
+## 9. Component Interaction
+
+```mermaid
+graph TD
+    A[register.astro] -->|Renders| B[RegisterForm.tsx]
+    B -->|Uses| C[Input.tsx]
+    B -->|Uses| D[Label.tsx]
+    B -->|Uses| E[Button.tsx]
+    
+    B -->|Calls| F[validateEmail function]
+    B -->|Calls| G[handleSubmit function]
+    
+    G -->|Fetches| H[/api/auth/register]
+    H -->|Uses| I[authSchema.ts - Zod]
+    H -->|Calls| J[locals.supabase.auth.signUp]
+    
+    J -->|Creates| K[User in DB]
+    J -->|Triggers| L[Email Service]
+    
+    L -->|Sends| M[Confirmation Email]
+    
+    B -->|On success| N[Show success screen]
+    N -->|After 3s| O[window.location.href = '/login']
+    
+    style N fill:#90EE90
+    style K fill:#90EE90
+    style M fill:#87CEEB
+```
+
+---
+
+**Diagramy ilustrują:**
+1. ✅ Pełny flow rejestracji (sequence)
+2. ✅ Walidację i błędy (graph)
+3. ✅ Porównanie z logowaniem
+4. ✅ Email confirmation flow
+5. ✅ Defense in depth security
+6. ✅ State machine formularza
+7. ✅ Stan bazy danych
+8. ✅ Error handling
+9. ✅ Interakcje komponentów
+
+**Status:** 📊 Wszystkie diagramy gotowe!
