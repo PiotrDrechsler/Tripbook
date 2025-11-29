@@ -1,0 +1,18 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import RegisterForm from "@/components/auth/RegisterForm";
+
+// Per-page auth check: if user is already logged in, redirect to /trips
+// Note: middleware also handles this, but we add it here for extra safety
+const session = Astro.locals.session;
+
+if (session) {
+  return Astro.redirect("/trips");
+}
+---
+
+<Layout title="Rejestracja - Tripbook">
+  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <RegisterForm client:load />
+  </div>
+</Layout>

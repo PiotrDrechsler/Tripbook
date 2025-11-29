@@ -68,3 +68,33 @@ export interface GetTripParams {
 export interface TripViewModel extends TripDto {
   displayDate: string;
 }
+
+/**
+ * User DTO - reprezentacja użytkownika zwracana przez API
+ */
+export interface UserDto {
+  id: string;
+  email: string;
+}
+
+/**
+ * Auth Response DTO - odpowiedź po logowaniu/rejestracji
+ */
+export interface AuthResponseDto {
+  message: string;
+  user: UserDto;
+}
+
+/**
+ * Logout Response DTO
+ */
+export interface LogoutResponseDto {
+  message: string;
+}
+
+/**
+ * Password Reset Response DTO
+ */
+export interface PasswordResetResponseDto {
+  message: string;
+}

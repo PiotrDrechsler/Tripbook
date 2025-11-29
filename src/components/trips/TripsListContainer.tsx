@@ -10,14 +10,16 @@ import { Pagination } from "./Pagination";
 import { AddTripButton } from "./AddTripButton";
 import { CreateTripModal } from "./CreateTripModal";
 import { Button } from "../ui/button";
+import UserMenu from "../auth/UserMenu";
 
 interface TripsListContainerProps {
   onTripSelected?: (tripId: string) => void;
+  userEmail?: string;
 }
 
 type SortOption = "created_at" | "distance" | "duration";
 
-export default function TripsListContainer({ onTripSelected }: TripsListContainerProps) {
+export default function TripsListContainer({ onTripSelected, userEmail }: TripsListContainerProps) {
   // Query parameters state
   const [queryParams, setQueryParams] = useState({
     page: 1,
@@ -136,7 +138,10 @@ export default function TripsListContainer({ onTripSelected }: TripsListContaine
               Zarządzaj swoimi trasami i planuj nowe wyprawy
             </p>
           </div>
-          <AddTripButton onOpen={handleOpenModal} />
+          <div className="flex items-center gap-3">
+            <AddTripButton onOpen={handleOpenModal} />
+            {userEmail && <UserMenu userEmail={userEmail} />}
+          </div>
         </div>
         <EmptyState />
         <CreateTripModal isOpen={isCreateModalOpen} onClose={handleCloseModal} onSuccess={handleTripCreated} />
@@ -147,9 +152,12 @@ export default function TripsListContainer({ onTripSelected }: TripsListContaine
   // Success state with data
   return (
     <div className="flex h-full flex-col">
-      <div className="flex flex-shrink-0 items-center justify-between">
+      <div className="flex flex-shrink-0 items-center justify-between gap-4">
         <h1 className="text-2xl font-bold sm:text-3xl">Moje wycieczki</h1>
-        <AddTripButton onOpen={handleOpenModal} />
+        <div className="flex items-center gap-3">
+          <AddTripButton onOpen={handleOpenModal} />
+          {userEmail && <UserMenu userEmail={userEmail} />}
+        </div>
       </div>
 
       {/* Sort buttons */}

@@ -1,12 +1,16 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import TripsListContainer from "../components/trips/TripsListContainer";
+
+// Get user from session (provided by middleware)
+const user = Astro.locals.user;
+const userEmail = user?.email || undefined;
 ---
 
 <Layout title="My Trips - Tripbook">
   <main class="flex h-screen flex-col bg-background">
     <div class="container mx-auto flex h-full flex-col px-4 py-4">
-      <TripsListContainer client:load />
+      <TripsListContainer client:load userEmail={userEmail} />
     </div>
   </main>
 </Layout>
