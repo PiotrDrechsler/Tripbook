@@ -36,7 +36,9 @@ Built as an MVP for certification, Tripbook leverages Astro islands with React, 
 - **Styling**: Tailwind CSS 4 + Shadcn/ui
 - **Backend-as-a-Service**: Supabase (Auth, Postgres, RLS, REST/GraphQL, real-time)
 - **External APIs**: Google Routes API (route calculation, distance, and travel time)
-- **Testing**: Playwright (E2E)
+- **Testing**:
+  - **Unit & Integration**: Vitest + Testing Library (React)
+  - **E2E**: Playwright (multi-browser, trace viewer, auto-waiting)
 - **CI/CD**: GitHub Actions → Netlify
 
 ## Getting Started
@@ -85,15 +87,39 @@ For detailed usage examples, see [Routes Service Documentation](src/lib/services
 
 In the project directory, you can run:
 
-| Command            | Description                         |
-| ------------------ | ----------------------------------- |
-| `npm run dev`      | Start Astro in dev mode (localhost) |
-| `npm run build`    | Build the production site           |
-| `npm run preview`  | Preview the built site locally      |
-| `npm run astro`    | Run Astro CLI commands              |
-| `npm run lint`     | Lint all files with ESLint          |
-| `npm run lint:fix` | Lint & fix issues automatically     |
-| `npm run format`   | Format all files with Prettier      |
+### Development
+
+| Command           | Description                         |
+| ----------------- | ----------------------------------- |
+| `npm run dev`     | Start Astro in dev mode (localhost) |
+| `npm run build`   | Build the production site           |
+| `npm run preview` | Preview the built site locally      |
+| `npm run astro`   | Run Astro CLI commands              |
+
+### Code Quality
+
+| Command            | Description                     |
+| ------------------ | ------------------------------- |
+| `npm run lint`     | Lint all files with ESLint      |
+| `npm run lint:fix` | Lint & fix issues automatically |
+| `npm run format`   | Format all files with Prettier  |
+
+### Testing
+
+| Command                    | Description                                 |
+| -------------------------- | ------------------------------------------- |
+| `npm run test`             | Run unit tests in watch mode                |
+| `npm run test:unit`        | Run all unit tests once                     |
+| `npm run test:unit:watch`  | Run unit tests in watch mode                |
+| `npm run test:unit:ui`     | Run unit tests with Vitest UI               |
+| `npm run test:coverage`    | Run tests with coverage report              |
+| `npm run test:e2e`         | Run E2E tests with Playwright               |
+| `npm run test:e2e:ui`      | Run E2E tests in Playwright UI mode         |
+| `npm run test:e2e:debug`   | Run E2E tests in debug mode                 |
+| `npm run test:e2e:report`  | Show Playwright test report                 |
+| `npm run test:e2e:codegen` | Generate E2E tests using Playwright codegen |
+
+For detailed testing documentation, see [TESTING.md](TESTING.md).
 
 ## Project Scope
 
@@ -137,6 +163,9 @@ This repository contains the MVP implementation:
 - ✅ Distance and travel time display from user's location
 - ✅ Support for multiple waypoints in trip routes
 - ✅ Interactive route information component
+- ✅ Complete testing environment (Vitest + Playwright)
+- ✅ Unit tests for utilities and components
+- ✅ E2E testing infrastructure with Page Object Model
 
 **Next Steps**
 

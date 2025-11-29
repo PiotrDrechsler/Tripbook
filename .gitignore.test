@@ -1,0 +1,15 @@
+# Vitest
+coverage/
+.vitest/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Test artifacts
+*.log
+screenshots/
+videos/
+traces/
+
