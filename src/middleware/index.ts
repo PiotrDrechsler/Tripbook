@@ -25,8 +25,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return context.redirect("/login?message=unauthorized");
   }
 
-  // Lista tras tylko dla niezalogowanych (login, register)
-  const authRoutes = ["/login", "/register"];
+  // Lista tras tylko dla niezalogowanych (login, register, home)
+  const authRoutes = ["/login", "/register", "/"];
   const isAuthRoute = authRoutes.some((route) => context.url.pathname === route);
 
   // Jeśli trasa auth i użytkownik zalogowany → redirect do /trips

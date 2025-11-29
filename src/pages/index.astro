@@ -1,9 +1,13 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 
-// TODO: Check if user is already logged in
-// If logged in, redirect to /trips
-// This will be implemented when backend auth is ready
+// Check if user is already logged in (provided by middleware)
+const user = Astro.locals.user;
+
+// If logged in, redirect to /trips (as per PRD US-001)
+if (user) {
+  return Astro.redirect("/trips");
+}
 ---
 
 <Layout title="Tripbook - Twoja biblioteka wycieczek">
