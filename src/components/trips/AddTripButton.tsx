@@ -8,7 +8,7 @@ interface AddTripButtonProps {
 
 export function AddTripButton({ onOpen }: AddTripButtonProps) {
   return (
-    <Button onClick={onOpen} className="w-full gap-2 sm:w-auto">
+    <Button onClick={onOpen} className="w-full gap-2 sm:w-auto" data-testid="add-trip-button">
       <PlusIcon />
       Dodaj trasę
     </Button>

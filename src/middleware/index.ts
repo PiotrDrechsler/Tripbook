@@ -7,21 +7,26 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const supabase = createSupabaseServerClient(context.cookies);
   context.locals.supabase = supabase;
 
-  // Get current session
+  // Get current session and user
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
+  // Get user securely using getUser() instead of using session.user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   // Add user and session to context
-  context.locals.user = session?.user ?? null;
+  context.locals.user = user;
   context.locals.session = session;
 
   // Lista chronionych tras (wymagają logowania)
   const protectedRoutes = ["/trips"];
   const isProtectedRoute = protectedRoutes.some((route) => context.url.pathname.startsWith(route));
 
-  // Jeśli chroniona trasa i brak sesji → redirect do logowania
-  if (isProtectedRoute && !session) {
+  // Jeśli chroniona trasa i brak użytkownika → redirect do logowania
+  if (isProtectedRoute && !user) {
     return context.redirect("/login?message=unauthorized");
   }
 
@@ -30,7 +35,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const isAuthRoute = authRoutes.some((route) => context.url.pathname === route);
 
   // Jeśli trasa auth i użytkownik zalogowany → redirect do /trips
-  if (isAuthRoute && session) {
+  if (isAuthRoute && user) {
     return context.redirect("/trips");
   }
 

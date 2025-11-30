@@ -64,8 +64,8 @@ export function TripListItem({ trip, onTripSelected, routeInfo }: TripListItemPr
     >
       <div className="flex gap-4">
         {/* Left side - Content */}
-        <div className="flex flex-1 flex-col gap-2">
-          <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
+        <div className="flex flex-1 flex-col gap-2 min-w-0">
+          <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 break-all">
             {trip.name}
           </h3>
           <div className="flex flex-col gap-2">
@@ -158,7 +158,9 @@ export function TripListItem({ trip, onTripSelected, routeInfo }: TripListItemPr
               </div>
             )}
           </div>
-          {trip.description && <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{trip.description}</p>}
+          {trip.description && (
+            <p className="mt-1 text-sm text-muted-foreground line-clamp-2 break-all">{trip.description}</p>
+          )}
         </div>
 
         {/* Right side - Thumbnail placeholder (TODO: Add trip photos in the future) */}

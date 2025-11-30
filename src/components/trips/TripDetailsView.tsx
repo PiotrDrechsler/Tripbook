@@ -112,8 +112,8 @@ export function TripDetailsView({ trip }: TripDetailsViewProps) {
         {/* Description section */}
         <div className="flex flex-col overflow-hidden rounded-lg border bg-card p-6">
           <h2 className="mb-3 text-lg font-semibold">Opis</h2>
-          <div className="flex-1 overflow-auto">
-            <p className="whitespace-pre-wrap text-muted-foreground">{trip.description || "Brak opisu"}</p>
+          <div className="flex-1 overflow-y-auto overflow-x-hidden">
+            <p className="whitespace-pre-wrap break-words text-muted-foreground">{trip.description || "Brak opisu"}</p>
           </div>
         </div>
 
