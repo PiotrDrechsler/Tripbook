@@ -1,9 +1,8 @@
-name: CI
+name: Test and Build Master
 
 on:
   push:
     branches:
-      - main
       - master
   workflow_dispatch:
 
