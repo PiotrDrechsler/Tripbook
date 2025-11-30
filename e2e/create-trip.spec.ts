@@ -12,7 +12,7 @@ import { test, expect } from "./fixtures";
  * 6. Click "Submit"
  *
  * Prerequisites:
- * - User must be logged in
+ * - User is automatically logged in via auth.setup.ts
  * - Application must be running
  *
  * Note: Uses fixtures for automatic Page Object initialization
@@ -20,8 +20,7 @@ import { test, expect } from "./fixtures";
 
 test.describe("Create Trip Flow", () => {
   test.beforeEach(async ({ tripsPage }) => {
-    // Navigate to trips page
-    // Note: In real scenario, you'd need to login first
+    // Navigate to trips page (user is already authenticated)
     await tripsPage.goto();
   });
 
@@ -39,11 +38,12 @@ test.describe("Create Trip Flow", () => {
     await tripsPage.clickAddTrip();
     await createTripModal.waitForModal();
 
-    // Prepare test data
+    // Prepare test data with unique name
+    const timestamp = Date.now();
     const tripData = {
-      name: "Wycieczka do Tatr",
+      name: `Wycieczka do Tatr ${timestamp}`,
       description: "Piękna wycieczka w góry. Będziemy wędrować szlakami Tatr Wysokich.",
-      mapUrl: "https://mapy.cz/s/hokakucoto", // Example valid mapy.cz link
+      mapUrl: "https://mapy.com/s/hulolekoje", // Example valid mapy.com link
       date: "2025-12-15",
     };
 
@@ -81,17 +81,17 @@ test.describe("Create Trip Flow", () => {
     await tripsPage.clickAddTrip();
     await createTripModal.waitForModal();
 
-    // Fill with name exceeding 100 characters
-    const longName = "A".repeat(101);
+    // Verify that HTML5 maxLength attribute prevents entering more than 100 characters
+    const maxLength = await createTripModal.nameInput.getAttribute("maxLength");
+    expect(maxLength).toBe("100");
+
+    // Try to fill with name exceeding 100 characters - should be truncated by browser
+    const longName = "A".repeat(150);
     await createTripModal.fillName(longName);
-    await createTripModal.fillMapUrl("https://mapy.cz/s/hokakucoto");
 
-    await createTripModal.submit();
-
-    // Verify error message
-    await expect(createTripModal.nameError).toBeVisible();
-    const errorText = await createTripModal.getNameError();
-    expect(errorText).toContain("100 znaków");
+    // Verify that the actual value is limited to 100 characters
+    const actualValue = await createTripModal.nameInput.inputValue();
+    expect(actualValue.length).toBeLessThanOrEqual(100);
   });
 
   test("should validate map URL format", async ({ tripsPage, createTripModal }) => {
@@ -133,7 +133,7 @@ test.describe("Create Trip Flow", () => {
     await createTripModal.waitForModal();
 
     await createTripModal.fillName("Test Trip");
-    await createTripModal.fillMapUrl("https://mapy.cz/s/hokakucoto");
+    await createTripModal.fillMapUrl("https://mapy.com/s/hulolekoje");
 
     // Wait for coordinates extraction
     await createTripModal.waitForCoordinatesSuccess();
@@ -149,19 +149,17 @@ test.describe("Create Trip Flow", () => {
     await tripsPage.clickAddTrip();
     await createTripModal.waitForModal();
 
-    // Fill with description exceeding 2000 characters
-    const longDescription = "A".repeat(2001);
-    await createTripModal.fillName("Test Trip");
+    // Verify that HTML5 maxLength attribute prevents entering more than 2000 characters
+    const maxLength = await createTripModal.descriptionInput.getAttribute("maxLength");
+    expect(maxLength).toBe("2000");
+
+    // Try to fill with description exceeding 2000 characters - should be truncated by browser
+    const longDescription = "A".repeat(2500);
     await createTripModal.fillDescription(longDescription);
-    await createTripModal.fillMapUrl("https://mapy.cz/s/hokakucoto");
 
-    await createTripModal.waitForCoordinatesSuccess();
-    await createTripModal.submit();
-
-    // Verify error message
-    await expect(createTripModal.descriptionError).toBeVisible();
-    const errorText = await createTripModal.getDescriptionError();
-    expect(errorText).toContain("2000 znaków");
+    // Verify that the actual value is limited to 2000 characters
+    const actualValue = await createTripModal.descriptionInput.inputValue();
+    expect(actualValue.length).toBeLessThanOrEqual(2000);
   });
 
   test("should close modal when clicking Cancel button", async ({ tripsPage, createTripModal }) => {
@@ -199,9 +197,9 @@ test.describe("Create Trip Flow", () => {
     await createTripModal.waitForModal();
 
     const tripData = {
-      name: "Test Trip",
+      name: `Test Trip ${Date.now()}`,
       description: "Test description",
-      mapUrl: "https://mapy.cz/s/hokakucoto",
+      mapUrl: "https://mapy.com/s/hulolekoje",
       date: "2025-12-15",
     };
 
@@ -214,7 +212,7 @@ test.describe("Create Trip Flow", () => {
 
     // Intercept the API call to add delay
     await page.route("**/api/trips", async (route) => {
-      await page.waitForTimeout(1000); // Simulate slow response
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate slow response
       await route.continue();
     });
 
@@ -222,9 +220,13 @@ test.describe("Create Trip Flow", () => {
     const submitPromise = createTripModal.submit();
 
     // Check if button is disabled while submitting
+    await page.waitForTimeout(100); // Small delay to let the submitting state kick in
     await expect(createTripModal.submitButton).toBeDisabled();
     const buttonText = await createTripModal.submitButton.textContent();
     expect(buttonText).toContain("Zapisywanie...");
+
+    // Clean up route handler
+    await page.unrouteAll({ behavior: "ignoreErrors" });
 
     await submitPromise;
   });

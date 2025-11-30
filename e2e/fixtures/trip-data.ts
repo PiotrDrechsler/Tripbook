@@ -5,19 +5,19 @@
 export const validTripData = {
   basic: {
     name: "Wycieczka do Tatr",
-    mapUrl: "https://mapy.cz/s/hokakucoto",
+    mapUrl: "https://mapy.com/s/hulolekoje",
   },
   complete: {
     name: "Wycieczka do Beskidów",
     description:
       "Piękna wycieczka w góry. Będziemy wędrować szlakami Beskidów. Zaplanowane jest zwiedzanie szczytów i schronisk górskich.",
-    mapUrl: "https://mapy.cz/s/hokakucoto",
+    mapUrl: "https://mapy.com/s/hulolekoje",
     date: "2025-12-15",
   },
   withLongDescription: {
     name: "Wycieczka z długim opisem",
     description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. ".repeat(10),
-    mapUrl: "https://mapy.cz/s/hokakucoto",
+    mapUrl: "https://mapy.com/s/hulolekoje",
     date: "2025-12-20",
   },
 };
@@ -25,16 +25,16 @@ export const validTripData = {
 export const invalidTripData = {
   emptyName: {
     name: "",
-    mapUrl: "https://mapy.cz/s/hokakucoto",
+    mapUrl: "https://mapy.com/s/hulolekoje",
   },
   nameTooLong: {
     name: "A".repeat(101), // Exceeds 100 character limit
-    mapUrl: "https://mapy.cz/s/hokakucoto",
+    mapUrl: "https://mapy.com/s/hulolekoje",
   },
   descriptionTooLong: {
     name: "Valid name",
     description: "A".repeat(2001), // Exceeds 2000 character limit
-    mapUrl: "https://mapy.cz/s/hokakucoto",
+    mapUrl: "https://mapy.com/s/hulolekoje",
   },
   invalidMapUrl: {
     name: "Valid name",
@@ -46,14 +46,14 @@ export const invalidTripData = {
   },
   invalidDateFormat: {
     name: "Valid name",
-    mapUrl: "https://mapy.cz/s/hokakucoto",
+    mapUrl: "https://mapy.com/s/hulolekoje",
     date: "2025-13-45", // Invalid date
   },
 };
 
 export const mapyLinks = {
   valid: [
-    "https://mapy.cz/s/hokakucoto",
+    "https://mapy.com/s/hulolekoje",
     "https://en.mapy.cz/zakladni?x=14.4378&y=50.0755&z=13",
     "https://mapy.cz/zakladni?vlastni-body&x=14.4378&y=50.0755&z=13&m3d=1&height=461&yaw=0&pitch=-90",
   ],
@@ -114,7 +114,7 @@ export function generateTripData(overrides?: Partial<typeof validTripData.comple
   return {
     name: generateRandomTripName(),
     description: "Testowa wycieczka utworzona automatycznie",
-    mapUrl: "https://mapy.cz/s/hokakucoto",
+    mapUrl: "https://mapy.com/s/hulolekoje",
     date: dateFormats.future,
     ...overrides,
   };
