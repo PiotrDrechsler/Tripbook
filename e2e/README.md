@@ -16,6 +16,8 @@ e2e/
 │   ├── CreateTripModal.ts # Create trip modal POM
 │   ├── index.ts          # Central export point
 │   └── README.md         # Detailed POM documentation
+├── auth.setup.ts         # Global setup for authentication
+├── global.teardown.ts    # Global teardown for cleanup
 ├── *.spec.ts             # Test files
 └── README.md             # This file
 ```
@@ -295,6 +297,31 @@ Key settings:
 - Screenshots: On failure
 - Traces: On first retry
 - Video: On failure
+
+### Test Lifecycle
+
+1. **Setup** (`auth.setup.ts`) - Runs once before authenticated tests to create session
+2. **Test Execution** - All test files run in parallel
+3. **Teardown** (`global.teardown.ts`) - Runs once after all tests to clean up test data
+
+### Teardown
+
+The teardown script automatically cleans up test data from Supabase after all tests complete:
+
+- Deletes all trips created by the test user
+- Uses the `E2E_USERNAME_ID` from `.env.test` to identify test data
+- Ensures a clean state for the next test run
+
+**Required environment variables** (in `.env.test`):
+
+```env
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your-anon-key
+E2E_USERNAME_ID=test-user-uuid
+E2E_USERNAME=test@example.com
+E2E_PASSWORD=test-password
+BASE_URL=http://localhost:3000
+```
 
 ## 📚 Further Reading
 

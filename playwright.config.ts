@@ -73,6 +73,11 @@ export default defineConfig({
       },
       dependencies: ["setup"],
     },
+    // Teardown project - runs after all tests to clean up test data
+    {
+      name: "teardown",
+      testMatch: /global\.teardown\.ts/,
+    },
   ],
 
   /* Run your local dev server before starting the tests */
