@@ -113,6 +113,7 @@ export async function listTrips(
     trip_date: trip.trip_date,
     latitude: trip.latitude,
     longitude: trip.longitude,
+    locations: trip.locations,
     created_at: trip.created_at,
     updated_at: trip.updated_at,
   }));

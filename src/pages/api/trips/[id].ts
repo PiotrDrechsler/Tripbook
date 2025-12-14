@@ -84,6 +84,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       trip_date: trip.trip_date,
       latitude: trip.latitude,
       longitude: trip.longitude,
+      locations: trip.locations,
       created_at: trip.created_at,
       updated_at: trip.updated_at,
     };
@@ -250,6 +251,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
       trip_date: trip.trip_date,
       latitude: trip.latitude,
       longitude: trip.longitude,
+      locations: trip.locations,
       created_at: trip.created_at,
       updated_at: trip.updated_at,
     };
