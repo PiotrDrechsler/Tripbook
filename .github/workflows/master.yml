@@ -137,7 +137,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }} --compatibility-date=2024-11-01
+          command: pages deploy dist --project-name=tripbook
 
       - name: Post deployment summary
         run: |
