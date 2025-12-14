@@ -3,8 +3,11 @@ import { defineMiddleware } from "astro:middleware";
 import { createSupabaseServerClient } from "../db/supabase.client.ts";
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  // Get environment variables from Cloudflare runtime
+  const env = context.locals.runtime?.env as { SUPABASE_URL?: string; SUPABASE_KEY?: string } | undefined;
+
   // Create Supabase client with automatic cookie management
-  const supabase = createSupabaseServerClient(context.cookies);
+  const supabase = createSupabaseServerClient(context.cookies, env);
   context.locals.supabase = supabase;
 
   // Get current session and user

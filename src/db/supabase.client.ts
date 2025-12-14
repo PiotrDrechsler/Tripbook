@@ -4,17 +4,22 @@ import type { AstroCookies } from "astro";
 
 import type { Database } from "../db/database.types.ts";
 
-const supabaseUrl = import.meta.env.SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.SUPABASE_KEY;
-
 export type SupabaseClient = SupabaseClientBase<Database>;
 
 /**
  * Creates a Supabase client for server-side rendering with automatic cookie management
  * @param cookies - Astro cookies object for managing session tokens
+ * @param env - Environment variables from Cloudflare runtime
  * @returns Configured Supabase client with SSR support
  */
-export function createSupabaseServerClient(cookies: AstroCookies): SupabaseClient {
+export function createSupabaseServerClient(
+  cookies: AstroCookies,
+  env?: { SUPABASE_URL?: string; SUPABASE_KEY?: string }
+): SupabaseClient {
+  // Try to get from runtime env first (Cloudflare), fallback to import.meta.env (build time)
+  const supabaseUrl = env?.SUPABASE_URL || import.meta.env.SUPABASE_URL;
+  const supabaseAnonKey = env?.SUPABASE_KEY || import.meta.env.SUPABASE_KEY;
+
   return createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
     cookies: {
       get(key: string) {
