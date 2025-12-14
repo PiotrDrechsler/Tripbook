@@ -14,18 +14,21 @@
 W sekcji **Environment secrets** dodaj następujące sekrety:
 
 ### SUPABASE_URL
+
 1. Kliknij **Add secret**
 2. Name: `SUPABASE_URL`
 3. Value: Twój URL z Supabase (np. `https://xxxxx.supabase.co`)
 4. Kliknij **Add secret**
 
 ### SUPABASE_KEY
+
 1. Kliknij **Add secret**
 2. Name: `SUPABASE_KEY`
 3. Value: Twój anon/public key z Supabase
 4. Kliknij **Add secret**
 
 ### GOOGLE_ROUTES_API_KEY
+
 1. Kliknij **Add secret**
 2. Name: `GOOGLE_ROUTES_API_KEY`
 3. Value: Twój Google Routes API key
@@ -36,14 +39,17 @@ W sekcji **Environment secrets** dodaj następujące sekrety:
 Możesz dodać dodatkowe zabezpieczenia:
 
 ### Required reviewers
+
 - Kliknij **Required reviewers**
 - Dodaj użytkowników, którzy muszą zatwierdzić deployment do tego environment
 
 ### Wait timer
+
 - Ustaw czas oczekiwania przed uruchomieniem jobów w tym environment
 - Przydatne dla production environments
 
 ### Deployment branches
+
 - **Selected branches** → dodaj `master`
 - To ograniczy environment tylko do brancha master
 
@@ -63,20 +69,24 @@ Po skonfigurowaniu, sprawdź czy wszystko działa:
 ## Troubleshooting
 
 ### "Resource not accessible by integration" error
+
 - Sprawdź uprawnienia workflow w Settings → Actions → General
 - Upewnij się że włączone jest: **Read and write permissions**
 
 ### E2E testy nie mają dostępu do sekretów
+
 - Zweryfikuj czy sekrety są dodane w environment `integration`, nie w repository secrets
 - Sprawdź czy nazwa environment w workflow (`environment: integration`) jest dokładnie taka sama
 
 ### Brak komentarza w PR
+
 - Sprawdź czy w Settings → Actions → General → Workflow permissions
 - Zaznacz: **Allow GitHub Actions to create and approve pull requests**
 
 ## Gdzie Znaleźć Wartości Sekretów?
 
 ### Supabase
+
 1. Przejdź do [Supabase Dashboard](https://app.supabase.com)
 2. Wybierz swój projekt
 3. Settings → API
@@ -84,6 +94,7 @@ Po skonfigurowaniu, sprawdź czy wszystko działa:
 5. **Project API keys** → `anon` `public` → skopiuj do `SUPABASE_KEY`
 
 ### Google Routes API
+
 1. Przejdź do [Google Cloud Console](https://console.cloud.google.com)
 2. Wybierz swój projekt
 3. APIs & Services → Credentials
