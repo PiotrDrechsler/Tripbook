@@ -1,0 +1,208 @@
+name: Pull Request CI
+
+on:
+  pull_request:
+    branches:
+      - master
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: lint
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload unit test coverage
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: unit-test-coverage
+          path: coverage/
+          retention-days: 30
+
+  e2e-test:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: lint
+    environment: integration
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build application
+        run: npm run build
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          GOOGLE_ROUTES_API_KEY: ${{ secrets.GOOGLE_ROUTES_API_KEY }}
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          GOOGLE_ROUTES_API_KEY: ${{ secrets.GOOGLE_ROUTES_API_KEY }}
+          CI: true
+
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: e2e-test-results
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 30
+
+      - name: Upload E2E coverage
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: e2e-test-coverage
+          path: playwright-report/
+          retention-days: 30
+
+  status-comment:
+    name: Post Status Comment
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [lint, unit-test, e2e-test]
+    if: always()
+
+    steps:
+      - name: Post PR comment
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const lintStatus = '${{ needs.lint.result }}';
+            const unitTestStatus = '${{ needs.unit-test.result }}';
+            const e2eTestStatus = '${{ needs.e2e-test.result }}';
+
+            const getStatusEmoji = (status) => {
+              switch(status) {
+                case 'success': return '✅';
+                case 'failure': return '❌';
+                case 'cancelled': return '⚠️';
+                case 'skipped': return '⏭️';
+                default: return '❓';
+              }
+            };
+
+            const allPassed = lintStatus === 'success' && 
+                             unitTestStatus === 'success' && 
+                             e2eTestStatus === 'success';
+
+            const overallStatus = allPassed ? '🎉 All checks passed!' : '⚠️ Some checks failed';
+
+            const comment = `## ${overallStatus}
+
+            ### CI/CD Status Report
+
+            | Job | Status | Result |
+            |-----|--------|--------|
+            | Lint | ${getStatusEmoji(lintStatus)} | \`${lintStatus}\` |
+            | Unit Tests | ${getStatusEmoji(unitTestStatus)} | \`${unitTestStatus}\` |
+            | E2E Tests | ${getStatusEmoji(e2eTestStatus)} | \`${e2eTestStatus}\` |
+
+            ---
+
+            ${allPassed ? 
+              '✨ This PR is ready for review!' : 
+              '⚠️ Please review the failed checks above before merging.'
+            }
+
+            <details>
+            <summary>View Details</summary>
+
+            - **Workflow Run:** [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            - **Commit:** ${{ github.event.pull_request.head.sha }}
+            - **Triggered by:** @${{ github.actor }}
+
+            </details>`;
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('CI/CD Status Report')
+            );
+
+            // Update or create comment
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
