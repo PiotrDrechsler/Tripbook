@@ -7,6 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## Table of Contents
+
 1. [Project Description](#project-description)
 2. [Tech Stack](#tech-stack)
 3. [Getting Started](#getting-started)
