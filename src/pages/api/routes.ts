@@ -76,11 +76,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       throw error;
     }
 
-    // Get API key from environment
-    const apiKey =
-      process.env.GOOGLE_ROUTES_API_KEY ||
-      import.meta.env.GOOGLE_ROUTES_API_KEY ||
-      import.meta.env.PUBLIC_GOOGLE_ROUTES_API_KEY;
+    // Get API key from environment (Cloudflare runtime first, then fallback)
+    const env = locals.runtime?.env as { GOOGLE_ROUTES_API_KEY?: string } | undefined;
+    const apiKey = env?.GOOGLE_ROUTES_API_KEY || import.meta.env.GOOGLE_ROUTES_API_KEY;
 
     if (!apiKey) {
       // eslint-disable-next-line no-console
