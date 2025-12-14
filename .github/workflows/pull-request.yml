@@ -95,6 +95,15 @@ jobs:
           echo "E2E_PASSWORD=${{ secrets.E2E_PASSWORD }}" >> .env.test
           echo "BASE_URL=http://localhost:3000" >> .env.test
 
+      - name: Debug - Check .env.test file (secrets are masked)
+        run: |
+          echo "=== Checking .env.test file exists and has content ==="
+          ls -la .env.test || echo ".env.test not found!"
+          echo "=== Number of lines in .env.test ==="
+          wc -l .env.test || echo "Cannot count lines"
+          echo "=== Checking for empty variables (values after =) ==="
+          grep "=$" .env.test && echo "WARNING: Empty variables found!" || echo "All variables have values"
+
       - name: Build application
         run: npm run build
         env:
