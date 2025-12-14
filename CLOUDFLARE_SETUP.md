@@ -17,10 +17,15 @@ The project uses `@astrojs/cloudflare` adapter for SSR (Server-Side Rendering) o
 **Configuration file:** `astro.config.mjs`
 
 ```javascript
-adapter: cloudflare({
-  platformProxy: {
-    enabled: true,
-  },
+import cloudflare from "@astrojs/cloudflare";
+
+export default defineConfig({
+  output: "server",
+  adapter: cloudflare({
+    platformProxy: {
+      enabled: true,
+    },
+  }),
 });
 ```
 
@@ -30,7 +35,26 @@ This enables:
 - Access to Cloudflare runtime APIs
 - Platform proxy for local development
 
-### 2. Required GitHub Secrets
+### 2. Routes Configuration
+
+The project includes a `_routes.json` file in the `public/` directory that defines which routes should be handled by the Cloudflare Worker:
+
+**File:** `public/_routes.json`
+
+```json
+{
+  "version": 1,
+  "include": ["/*"],
+  "exclude": ["/favicon.png", "/_astro/*"]
+}
+```
+
+This configuration:
+
+- Routes all requests through the Worker (SSR)
+- Excludes static assets like favicon and bundled assets for better performance
+
+### 3. Required GitHub Secrets
 
 Configure the following secrets in your GitHub repository (`Settings` → `Secrets and variables` → `Actions`):
 
@@ -148,12 +172,26 @@ npm run preview
 1. Check that all required secrets are configured in GitHub
 2. Verify environment variables are correctly set in the workflow
 3. Review build logs in GitHub Actions
+4. Ensure `@astrojs/cloudflare` is installed in dependencies
 
 ### Deployment Fails
 
-1. Verify `CLOUDFLARE_API_TOKEN` has correct permissions
-2. Check that `CLOUDFLARE_ACCOUNT_ID` is correct
-3. Ensure `CLOUDFLARE_PROJECT_NAME` matches your Pages project
+**Error: "The process '/usr/local/bin/npx' failed with exit code 1"**
+
+This usually means one of the following:
+
+1. **Wrong adapter:** Make sure `astro.config.mjs` uses `@astrojs/cloudflare`, not `@astrojs/node`
+2. **Invalid API Token:** Verify `CLOUDFLARE_API_TOKEN` has correct permissions
+3. **Wrong Account ID:** Check that `CLOUDFLARE_ACCOUNT_ID` is correct
+4. **Project name mismatch:** Ensure `CLOUDFLARE_PROJECT_NAME` matches your Pages project
+5. **Missing build output:** Verify the `dist/` directory contains `_worker.js` file
+
+**Debugging steps:**
+
+1. Check the "Verify build output" step in GitHub Actions logs
+2. Ensure `_worker.js` exists in the build output
+3. Verify `_routes.json` is copied to the build output
+4. Check Cloudflare Pages dashboard for detailed error messages
 
 ### Runtime Issues
 

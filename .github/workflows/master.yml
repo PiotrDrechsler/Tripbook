@@ -114,13 +114,30 @@ jobs:
           name: build-output
           path: dist/
 
+      - name: Verify build output
+        run: |
+          echo "=== Build output structure ==="
+          ls -la dist/
+          echo "=== Checking for _worker.js ==="
+          if [ -f "dist/_worker.js" ]; then
+            echo "✅ _worker.js found"
+          else
+            echo "❌ _worker.js not found"
+          fi
+          echo "=== Checking for _routes.json ==="
+          if [ -f "dist/_routes.json" ]; then
+            echo "✅ _routes.json found"
+          else
+            echo "⚠️ _routes.json not found"
+          fi
+
       - name: Deploy to Cloudflare Pages
         id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }}
+          command: pages deploy dist --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }} --compatibility-date=2024-11-01
 
       - name: Post deployment summary
         run: |
